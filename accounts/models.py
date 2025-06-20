@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 class User(AbstractBaseUser):
     class Role(models.TextChoices):
         ADMIN = "admin", _("admin")
@@ -17,4 +18,3 @@ class User(AbstractBaseUser):
     role = models.CharField(_("role"), max_length=30, choices=Role.choices)
 
     USERNAME_FIELD = "email"
-
