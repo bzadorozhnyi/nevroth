@@ -2,6 +2,8 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from accounts.managers import UserManager
+
 
 class User(AbstractBaseUser):
     class Role(models.TextChoices):
@@ -17,4 +19,19 @@ class User(AbstractBaseUser):
 
     role = models.CharField(_("role"), max_length=30, choices=Role.choices)
 
+    is_superuser = models.BooleanField(_("superuser"), default=False)
+    is_staff = models.BooleanField(
+        _("staff status"),
+        default=False,
+        help_text=_("Designates whether the user can log into this admin site.")
+    )
+
+    objects = UserManager()
+
     USERNAME_FIELD = "email"
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
