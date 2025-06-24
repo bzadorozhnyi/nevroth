@@ -1,8 +1,12 @@
+import uuid
+
+from django.core.mail import send_mail
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from accounts.managers import UserManager
+from nevroth import settings
 
 
 class User(AbstractBaseUser):
@@ -35,3 +39,35 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+
+class VerifyToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    email = models.EmailField(_("email address"))
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        creating = True if not self.pk else False
+        if creating:
+            VerifyToken.objects.filter(email=self.email).delete()
+
+        super().save(*args, **kwargs)
+
+    @property
+    def restore_link(self):
+        base_domain = settings.BASE_UI_DOMAIN
+        protocol = settings.UI_URL_PROTOCOL
+
+        return f"{protocol}{base_domain}/password/reset/{self.token}"
+
+    def send_email_to_restore_password(self):
+        subject = _("Nevroth Restore Password")
+        plain_text = f"Restore password link: {self.restore_link}"
+
+        send_mail(
+            subject=subject,
+            message=plain_text,
+            recipient_list=[self.email],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+        )

@@ -128,3 +128,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# TODO replace DEFAULT_FROM_EMAIL's dummy value
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "example_email@nevroth.com")
+
+# TODO replace BASE_UI_DOMAIN's dummy value
+BASE_UI_DOMAIN = "localhost:5678"
+UI_URL_PROTOCOL = "http://"
