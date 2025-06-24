@@ -30,6 +30,15 @@ class BaseUserFactory(DjangoModelFactory):
                 self.save()
 
 
+class MemberCreatePayloadFactory(factory.Factory):
+    class Meta:
+        model = dict
+
+    email = factory.Faker("email")
+    full_name = factory.Faker("name")
+    password = factory.LazyFunction(lambda: make_password("password"))
+
+
 class AdminFactory(BaseUserFactory):
     role = User.Role.ADMIN
 
