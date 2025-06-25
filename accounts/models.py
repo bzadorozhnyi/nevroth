@@ -12,7 +12,7 @@ from nevroth import settings
 class User(AbstractBaseUser):
     class Role(models.TextChoices):
         ADMIN = "admin", _("admin")
-        INSTALLER = "installer", _("installer")
+        MEMBER = "member", _("member")
 
     email = models.EmailField(_("email address"), unique=True)
     full_name = models.CharField(_("full name"), max_length=255)

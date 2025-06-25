@@ -17,7 +17,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ["email", "full_name", "password"]
 
     def create(self, validated_data):
-        validated_data["role"] = User.Role.INSTALLER
+        validated_data["role"] = User.Role.MEMBER
         return User.objects.create_user(**validated_data)
 
 
