@@ -26,9 +26,9 @@ class SelectUserHabitsTests(APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def _test_select_user_habits_as_authenticated_user(self, user):
-        """Test that authenticated user can select habits."""
-        self.client.force_authenticate(user)
+    def test_select_user_habits_as_member(self):
+        """Test that member can select habits."""
+        self.client.force_authenticate(self.member)
         habits_ids = [habit.id for habit in self.habits[:3]]
         payload = {
             "habits_ids": habits_ids,
@@ -38,17 +38,20 @@ class SelectUserHabitsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         actual_habits_ids = list(
-            UserHabit.objects.filter(user=user).values_list("habits_id", flat=True)
+            UserHabit.objects.filter(user=self.member).values_list("habits_id", flat=True)
         )
         self.assertCountEqual(actual_habits_ids, habits_ids)
 
-    def test_select_user_habits_as_member(self):
-        """Test that member can select habits."""
-        self._test_select_user_habits_as_authenticated_user(self.member)
+    def test_cannot_select_user_habits_as_admin(self):
+        """Test that admin cannot select habits."""
+        self.client.force_authenticate(self.admin)
+        habits_ids = [habit.id for habit in self.habits[:3]]
+        payload = {
+            "habits_ids": habits_ids,
+        }
 
-    def test_select_user_habits_as_admin(self):
-        """Test that admin can select habits."""
-        self._test_select_user_habits_as_authenticated_user(self.admin)
+        response = self.client.post(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_cannot_select_less_than_three_habits(self):
         """Test that cannot select less than three habits."""
