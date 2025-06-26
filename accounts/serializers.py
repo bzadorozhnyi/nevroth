@@ -9,6 +9,26 @@ from accounts.models import VerifyToken
 User = get_user_model()
 
 
+class CurrentUserSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=User.Role.choices)
+
+    class Meta:
+        model = User
+        exclude = (
+            "password",
+            "created_at",
+            "updated_at",
+            "is_staff",
+            "is_superuser",
+            "last_login",
+        )
+
+    def validate_role(self, value):
+        if self.instance and value != self.instance.role:
+            raise serializers.ValidationError("You are not allowed to change your role")
+        return value
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 
