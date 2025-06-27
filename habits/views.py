@@ -2,7 +2,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework import filters
 
+from django_filters.rest_framework import DjangoFilterBackend
+
+from habits.filters import HabitFilter
 from habits.models import Habit
 from habits.permissions import RoleBasedHabitPermission
 from habits.serializers import HabitSerializer, UserHabitsUpdateSerializer
@@ -12,6 +16,9 @@ class HabitViewSet(viewsets.ModelViewSet):
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
     permission_classes = [RoleBasedHabitPermission]
+    filterset_class = HabitFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ["name", "description"]
 
     @action(
         detail=False,
