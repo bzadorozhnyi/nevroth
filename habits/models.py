@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from nevroth import settings
+from django.conf import settings
 
 
 class Habit(models.Model):

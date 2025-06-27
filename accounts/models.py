@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from accounts.managers import UserManager
-from nevroth import settings
+from django.conf import settings
 
 
 class User(AbstractBaseUser):
