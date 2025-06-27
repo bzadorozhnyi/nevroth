@@ -5,17 +5,20 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from accounts.models import VerifyToken
+from habits.models import UserHabit
 
 User = get_user_model()
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=User.Role.choices)
+    selected_habits = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         exclude = (
             "password",
+            "habits",
             "created_at",
             "updated_at",
             "is_staff",
@@ -27,6 +30,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         if self.instance and value != self.instance.role:
             raise serializers.ValidationError("You are not allowed to change your role")
         return value
+
+    def get_selected_habits(self, obj):
+        return UserHabit.objects.filter(user=obj).exists()
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

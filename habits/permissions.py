@@ -9,6 +9,12 @@ class RoleBasedHabitPermission(BasePermission):
         if not request.user.is_authenticated:
             return False
 
+        if (
+                request.method == "POST" and
+                getattr(view, "action", None) == "select_user_habits"
+        ):
+            return request.user.role == User.Role.MEMBER
+
         if request.user.role == User.Role.MEMBER:
             return request.method in SAFE_METHODS
 

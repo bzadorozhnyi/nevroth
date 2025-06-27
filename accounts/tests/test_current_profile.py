@@ -13,13 +13,14 @@ user_profile_schema = {
     "properties": {
         "id": {"type": "integer"},
         "email": {"type": "string", "format": "email"},
+        "selected_habits": {"type": "boolean"},
         "full_name": {"type": "string"},
         "role": {
             "type": "string",
             "enum": ["member", "admin"]
         },
     },
-    "required": ["id", "email", "full_name", "role"],
+    "required": ["id", "email", "selected_habits", "full_name", "role"],
     "additionalProperties": False,
 }
 
