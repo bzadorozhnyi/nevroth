@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from habits import models
-from habits.models import Habit, UserHabit
+from habits.models import Habit
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -10,15 +10,11 @@ class HabitSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 
-class UserHabitsUpdateSerializer(serializers.ModelSerializer):
+class UserHabitsUpdateSerializer(serializers.Serializer):
     habits_ids = serializers.ListSerializer(
         child=serializers.IntegerField(),
         allow_empty=False,
     )
-
-    class Meta:
-        model = UserHabit
-        fields = ["habits_ids"]
 
     def validate_habits_ids(self, value):
         if len(value) != 3:
