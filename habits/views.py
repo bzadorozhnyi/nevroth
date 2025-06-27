@@ -31,7 +31,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         # Remove previous habits
         UserHabit.objects.filter(user=user).delete()
 
-        new_user_habits = [UserHabit(user=user, habits_id=habit_id) for habit_id in habit_ids]
+        new_user_habits = [UserHabit(user=user, habit_id=habit_id) for habit_id in habit_ids]
         UserHabit.objects.bulk_create(new_user_habits)
 
         return Response({"detail": _("Habits updated successfully")}, status=status.HTTP_200_OK)

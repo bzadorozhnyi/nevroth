@@ -11,7 +11,7 @@ class Habit(models.Model):
 
 class UserHabit(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    habits = models.ForeignKey(Habit, on_delete=models.CASCADE)
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("user", "habits")
+        unique_together = ("user", "habit")

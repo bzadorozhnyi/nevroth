@@ -38,7 +38,7 @@ class SelectUserHabitsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         actual_habits_ids = list(
-            UserHabit.objects.filter(user=self.member).values_list("habits_id", flat=True)
+            UserHabit.objects.filter(user=self.member).values_list("habit_id", flat=True)
         )
         self.assertCountEqual(actual_habits_ids, habits_ids)
 
