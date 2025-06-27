@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from habits import models
+from habits.constants import REQUIRED_HABITS_COUNT
 from habits.models import Habit, UserHabit
 
 
@@ -32,10 +33,10 @@ class UserHabitsUpdateSerializer(serializers.Serializer):
         return {"detail": _("Habits updated successfully")}
 
     def validate_habits_ids(self, value):
-        if len(value) != 3:
-            raise serializers.ValidationError("Exactly 3 habits must be provided")
+        if len(value) != REQUIRED_HABITS_COUNT:
+            raise serializers.ValidationError(f"Exactly {REQUIRED_HABITS_COUNT} habits must be provided")
 
-        if len(set(value)) != 3:
+        if len(set(value)) != REQUIRED_HABITS_COUNT:
             raise serializers.ValidationError("Habits must be unique")
 
         existing_habits = models.Habit.objects.filter(id__in=value).values_list("id", flat=True)
