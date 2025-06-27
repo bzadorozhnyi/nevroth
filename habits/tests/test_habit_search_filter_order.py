@@ -69,3 +69,27 @@ class HabitSearchFilterTests(APITestCase):
                     self.assertEqual(results[0]["name"], "Apple addiction")
                 elif param == "name" and value == "specific":
                     self.assertEqual(results[0]["name"], "Specific habit")
+
+    def test_list_habits_with_ordering(self):
+        self.client.force_authenticate(user=self.member)
+
+        HabitFactory(name="Habit A")
+        HabitFactory(name="Habit B")
+        HabitFactory(name="Habit C")
+
+        ordering_test_cases = [
+            ("name", ["Habit A", "Habit B", "Habit C"]),
+            ("-name", ["Habit C", "Habit B", "Habit A"]),
+        ]
+
+        for ordering_param, expected_order in ordering_test_cases:
+            with self.subTest(f"ordering by {ordering_param}"):
+                response = self.client.get(f"{self.list_url}?ordering={ordering_param}")
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+                results = response.get("results", response.data)
+
+                if ordering_param in ["name", "-name"]:
+                    actual_values = [habit["name"] for habit in results]
+
+                self.assertEqual(actual_values, expected_order)

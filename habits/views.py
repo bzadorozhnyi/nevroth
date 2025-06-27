@@ -17,7 +17,8 @@ class HabitViewSet(viewsets.ModelViewSet):
     serializer_class = HabitSerializer
     permission_classes = [RoleBasedHabitPermission]
     filterset_class = HabitFilter
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ["name"]
     search_fields = ["name", "description"]
 
     @action(
