@@ -18,6 +18,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         model = User
         exclude = (
             "password",
+            "habits",
             "created_at",
             "updated_at",
             "is_staff",

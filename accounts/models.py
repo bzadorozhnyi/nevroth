@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from accounts.managers import UserManager
 from django.conf import settings
 
+from habits.models import Habit
+
 
 class User(AbstractBaseUser):
     class Role(models.TextChoices):
@@ -17,6 +19,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(_("email address"), unique=True)
     full_name = models.CharField(_("full name"), max_length=255)
     password = models.CharField(_("password"), max_length=128)
+    habits = models.ManyToManyField(Habit, through="habits.UserHabit", verbose_name=_("habits"))
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
