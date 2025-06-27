@@ -1,7 +1,9 @@
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import serializers
 
 from habits import models
-from habits.models import Habit
+from habits.models import Habit, UserHabit
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -16,11 +18,24 @@ class UserHabitsUpdateSerializer(serializers.Serializer):
         allow_empty=False,
     )
 
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        habit_ids = self.validated_data["habits_ids"]
+
+        # Remove previous habits
+        UserHabit.objects.filter(user=user).delete()
+
+        # Add new ones
+        new_user_habits = [UserHabit(user=user, habit_id=habit_id) for habit_id in habit_ids]
+        UserHabit.objects.bulk_create(new_user_habits)
+
+        return {"detail": _("Habits updated successfully")}
+
     def validate_habits_ids(self, value):
         if len(value) != 3:
             raise serializers.ValidationError("Exactly 3 habits must be provided")
 
-        if list(set(value)) != value:
+        if len(set(value)) != 3:
             raise serializers.ValidationError("Habits must be unique")
 
         existing_habits = models.Habit.objects.filter(id__in=value).values_list("id", flat=True)

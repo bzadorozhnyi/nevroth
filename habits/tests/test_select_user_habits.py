@@ -26,10 +26,7 @@ class SelectUserHabitsTests(APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_select_user_habits_as_member(self):
-        """Test that member can select habits."""
-        self.client.force_authenticate(self.member)
-        habits_ids = [habit.id for habit in self.habits[:3]]
+    def _test_selecting_habits_success(self, habits_ids):
         payload = {
             "habits_ids": habits_ids,
         }
@@ -41,6 +38,12 @@ class SelectUserHabitsTests(APITestCase):
             UserHabit.objects.filter(user=self.member).values_list("habit_id", flat=True)
         )
         self.assertCountEqual(actual_habits_ids, habits_ids)
+
+    def test_select_user_habits_as_member(self):
+        """Test that member can select habits."""
+        self.client.force_authenticate(self.member)
+        habits_ids = [habit.id for habit in self.habits[:3]]
+        self._test_selecting_habits_success(habits_ids)
 
     def test_cannot_select_user_habits_as_admin(self):
         """Test that admin cannot select habits."""
@@ -104,3 +107,14 @@ class SelectUserHabitsTests(APITestCase):
 
         response = self.client.post(self.url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_selected_habits(self):
+        """Test that habits can be updated."""
+        self.client.force_authenticate(self.member)
+        # Create habits
+        habits_ids = [habit.id for habit in self.habits[:3]]
+        self._test_selecting_habits_success(habits_ids)
+
+        # Update habits
+        new_habits_ids = [habit.id for habit in self.habits[2:5]]
+        self._test_selecting_habits_success(new_habits_ids)
