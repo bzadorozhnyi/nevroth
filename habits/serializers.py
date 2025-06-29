@@ -1,10 +1,13 @@
+from datetime import datetime
+
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from rest_framework import serializers
 
 from habits import models
-from habits.constants import REQUIRED_HABITS_COUNT
-from habits.models import Habit, UserHabit
+from habits.constants import REQUIRED_HABITS_COUNT, HABIT_FAIL_UPDATE_TIMEOUT_SECONDS
+from habits.models import Habit, UserHabit, HabitProgress
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -46,3 +49,34 @@ class UserHabitsUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError(f"These habit IDs do not exist: {missing_ids}")
 
         return value
+
+
+class HabitProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HabitProgress
+        fields = ["habit", "date", "status"]
+        read_only_fields = ["date"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        habit = validated_data.get("habit")
+        date = datetime.now().date()
+
+        habit_progress, created = HabitProgress.objects.get_or_create(
+            user=user,
+            habit=habit,
+            date=date,
+            defaults={"status": validated_data.get("status")}
+        )
+
+        if not created:
+            time_diff = timezone.now() - habit_progress.updated_at
+            if (habit_progress.status == HabitProgress.Status.FAIL and
+                    time_diff.total_seconds() > HABIT_FAIL_UPDATE_TIMEOUT_SECONDS):
+                raise serializers.ValidationError(
+                    _(f"Cannot update failed progress after {HABIT_FAIL_UPDATE_TIMEOUT_SECONDS} seconds"))
+
+            habit_progress.status = validated_data.get("status")
+            habit_progress.save()
+
+        return habit_progress

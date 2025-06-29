@@ -1,15 +1,17 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework import filters
+from rest_framework import mixins
 
 from django_filters.rest_framework import DjangoFilterBackend
 
 from habits.filters import HabitFilter
-from habits.models import Habit
+from habits.models import Habit, HabitProgress
 from habits.permissions import RoleBasedHabitPermission
-from habits.serializers import HabitSerializer, UserHabitsUpdateSerializer
+from habits.serializers import HabitSerializer, UserHabitsUpdateSerializer, HabitProgressSerializer
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -33,3 +35,13 @@ class HabitViewSet(viewsets.ModelViewSet):
         result = serializer.save()
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+class HabitProgressViewSet(viewsets.GenericViewSet,
+                           mixins.ListModelMixin,
+                           mixins.CreateModelMixin):
+    permission_classes = [IsAuthenticated]
+    serializer_class = HabitProgressSerializer
+
+    def get_queryset(self):
+        return HabitProgress.objects.filter(user=self.request.user)
