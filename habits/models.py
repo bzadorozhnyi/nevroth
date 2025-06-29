@@ -8,6 +8,9 @@ class Habit(models.Model):
     name = models.CharField(_("name"), max_length=100)
     description = models.TextField(_("description"), max_length=255)
 
+    def __str__(self):
+        return f"{self.name} – {self.description[:30]}..."
+
 
 class UserHabit(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
