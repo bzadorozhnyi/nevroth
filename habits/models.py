@@ -15,3 +15,22 @@ class UserHabit(models.Model):
 
     class Meta:
         unique_together = ("user", "habit")
+
+
+class HabitProgress(models.Model):
+    class Status(models.TextChoices):
+        SUCCESS = "success", _("success")
+        FAIL = "fail", _("fail")
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user"))
+    habit = models.ForeignKey(Habit, on_delete=models.CASCADE, verbose_name=_("habit"))
+    date = models.DateField(_("date"), auto_now_add=True)
+
+    updated_at = models.DateTimeField(_("updated at"), auto_now=True)
+    status = models.CharField(_("status"), max_length=10, choices=Status.choices)
+
+    class Meta:
+        unique_together = ("user", "habit", "date")
+
+    def __str__(self):
+        return f"{self.user} - {self.habit} on {self.date}: {self.status}"
