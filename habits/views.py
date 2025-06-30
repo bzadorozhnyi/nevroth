@@ -1,10 +1,9 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework import filters
-from rest_framework import mixins
+from rest_framework import generics
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -37,10 +36,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class HabitProgressViewSet(viewsets.GenericViewSet,
-                           mixins.ListModelMixin,
-                           mixins.CreateModelMixin):
-    permission_classes = [IsAuthenticated]
+class HabitProgressViewSet(generics.ListCreateAPIView):
     serializer_class = HabitProgressSerializer
 
     def get_queryset(self):

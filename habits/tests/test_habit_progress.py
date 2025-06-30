@@ -9,8 +9,7 @@ from rest_framework.test import APITestCase
 
 from accounts.tests.factories.user import MemberFactory, AdminFactory
 from habits.models import Habit, HabitProgress
-from habits.tests.factories.habit import HabitFactory, HabitProgressFactory, HabitProgressSuccessFactory, \
-    HabitProgressCreatePayloadFactory
+from habits.tests.factories.habit import HabitFactory, HabitProgressSuccessFactory, HabitProgressCreatePayloadFactory
 
 habit_progress_schema = {
     "type": "object",
@@ -46,11 +45,11 @@ class HabitProgressTests(APITestCase):
         Habit.objects.all().delete()
         cls.habits = HabitFactory.create_batch(5)
 
-        cls.list_url = reverse("habit-progress-list")
+        cls.url = reverse("habit-progress")
 
     def test_list_habits_progress_authentication_required(self):
         """Test that authentication is required to get habits progress list."""
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def _test_list_habits_progress_as_authenticated_user(self, user):
@@ -61,7 +60,7 @@ class HabitProgressTests(APITestCase):
         HabitProgressSuccessFactory(user=user, habit=self.habits[1])
         HabitProgressSuccessFactory(user=user, habit=self.habits[2])
 
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.data
@@ -82,7 +81,7 @@ class HabitProgressTests(APITestCase):
     def test_create_habit_progress_authentication_required(self):
         """Test that authentication is required to create habit progress."""
         payload = HabitProgressCreatePayloadFactory()
-        response = self.client.post(self.list_url, payload)
+        response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def _test_create_habit_progress_as_authenticated_user(self, user):
@@ -91,7 +90,7 @@ class HabitProgressTests(APITestCase):
 
         payload = HabitProgressCreatePayloadFactory()
 
-        response = self.client.post(self.list_url, payload)
+        response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertTrue(HabitProgress.objects.filter(
@@ -126,7 +125,7 @@ class HabitProgressTests(APITestCase):
         payload = HabitProgressCreatePayloadFactory()
         payload.pop("habit")
 
-        response = self.client.post(self.list_url, payload)
+        response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_create_habit_progress_without_status(self):
@@ -136,7 +135,7 @@ class HabitProgressTests(APITestCase):
         payload = HabitProgressCreatePayloadFactory()
         payload.pop("status")
 
-        response = self.client.post(self.list_url, payload)
+        response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_create_habit_progress_with_nonexisting_status_choice(self):
@@ -146,7 +145,7 @@ class HabitProgressTests(APITestCase):
         payload = HabitProgressCreatePayloadFactory()
         payload["status"] = "nonexistent-status"
 
-        response = self.client.post(self.list_url, payload)
+        response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_habit_progress_authentication_required(self):
@@ -156,7 +155,7 @@ class HabitProgressTests(APITestCase):
         update_payload = {
             "status": "fail",
         }
-        response = self.client.post(self.list_url, update_payload)
+        response = self.client.post(self.url, update_payload)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def _test_update_habit_progress_as_authenticated_user(self, user):
@@ -168,7 +167,7 @@ class HabitProgressTests(APITestCase):
             "habit": self.habits[0].id,
             "status": "fail",
         }
-        response = self.client.post(self.list_url, update_payload)
+        response = self.client.post(self.url, update_payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -207,7 +206,7 @@ class HabitProgressTests(APITestCase):
             "habit": self.habits[0].id,
         }
 
-        response = self.client.post(self.list_url, update_payload)
+        response = self.client.post(self.url, update_payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_update_habit_progress_with_nonexisting_status_choice(self):
@@ -221,7 +220,7 @@ class HabitProgressTests(APITestCase):
             "status": "nonexistent-status",
         }
 
-        response = self.client.post(self.list_url, update_payload)
+        response = self.client.post(self.url, update_payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def _assert_list_response_schema(self, data):

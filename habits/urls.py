@@ -6,8 +6,8 @@ from habits.views import HabitViewSet, HabitProgressViewSet
 
 router = DefaultRouter()
 router.register('habits', HabitViewSet, basename='habit')
-router.register('habits-progress', HabitProgressViewSet, basename='habit-progress')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('habits-progress', HabitProgressViewSet.as_view(), name='habit-progress'),
 ]
