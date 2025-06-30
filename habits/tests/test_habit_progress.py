@@ -1,15 +1,17 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import jsonschema
 
 from django.urls import reverse
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from accounts.tests.factories.user import MemberFactory, AdminFactory
 from habits.models import Habit, HabitProgress
-from habits.tests.factories.habit import HabitFactory, HabitProgressSuccessFactory, HabitProgressCreatePayloadFactory
+from habits.tests.factories.habit import HabitFactory, HabitProgressSuccessFactory, HabitProgressCreatePayloadFactory, \
+    HabitProgressFailFactory
 
 habit_progress_schema = {
     "type": "object",
@@ -221,6 +223,95 @@ class HabitProgressTests(APITestCase):
         }
 
         response = self.client.post(self.url, update_payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def _test_update_habit_progress_success(self, update_payload):
+        """Test that habit progress update was successful."""
+        response = self.client.post(self.url, update_payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(HabitProgress.objects.filter(
+            user=self.member,
+            habit=update_payload["habit"],
+        ).exists())
+
+        habit_progress = HabitProgress.objects.filter(
+            user=self.member,
+            habit=update_payload["habit"],
+        ).first()
+
+        self.assertEqual(habit_progress.habit.id, update_payload["habit"])
+        self.assertEqual(habit_progress.status, update_payload["status"])
+        self.assertEqual(habit_progress.date, datetime.today().date())
+
+        # Verify response schema
+        self._assert_detail_response_schema(response.data)
+
+    def test_update_habit_progress_success_to_fail_status_after_5_minutes(self):
+        """Test that habit progress can be updated from success to fail status after 5 minutes."""
+        self.client.force_authenticate(self.member)
+
+        # last updated - 10 minutes ago
+        updated_at = timezone.now() - timedelta(minutes=10)
+        instance = HabitProgressSuccessFactory(user=self.member, habit=self.habits[0])
+        HabitProgress.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+
+        update_payload = {
+            "habit": self.habits[0].id,
+            "status": "fail",
+        }
+
+        self._test_update_habit_progress_success(update_payload)
+
+    def test_can_update_habit_progress_fail_to_success_status_in_5_minutes(self):
+        """Test that habit progress can be updated from fail to success status in 5 minutes."""
+        self.client.force_authenticate(self.member)
+
+        # last updated - 2 minutes ago
+        updated_at = timezone.now() - timedelta(minutes=2)
+        instance = HabitProgressFailFactory(user=self.member, habit=self.habits[0])
+        HabitProgress.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+
+        update_payload = {
+            "habit": self.habits[0].id,
+            "status": "success",
+        }
+
+        self._test_update_habit_progress_success(update_payload)
+
+    def test_update_habit_progress_success_to_fail_status_in_5_minutes(self):
+        """Test that habit progress can be updated from success to fail status in 5 minutes."""
+        self.client.force_authenticate(self.member)
+
+        # last updated - 2 minutes ago
+        updated_at = timezone.now() - timedelta(minutes=2)
+        instance = HabitProgressSuccessFactory(user=self.member, habit=self.habits[0])
+        HabitProgress.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+
+        update_payload = {
+            "habit": self.habits[0].id,
+            "status": "fail",
+        }
+
+        self._test_update_habit_progress_success(update_payload)
+
+    def test_cannot_update_habit_progress_fail_to_success_status_after_5_minutes(self):
+        """Test that habit progress cannot be updated from fail to success status after 5 minutes."""
+        self.client.force_authenticate(self.member)
+
+        # last updated - 10 minutes ago
+        updated_at = timezone.now() - timedelta(minutes=10)
+        instance = HabitProgressFailFactory(user=self.member, habit=self.habits[0])
+        HabitProgress.objects.filter(pk=instance.pk).update(updated_at=updated_at)
+
+        update_payload = {
+            "habit": self.habits[0].id,
+            "status": "success",
+        }
+
+        response = self.client.post(self.url, update_payload)
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def _assert_list_response_schema(self, data):
