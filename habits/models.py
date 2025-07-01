@@ -34,6 +34,9 @@ class HabitProgress(models.Model):
 
     class Meta:
         unique_together = ("user", "habit", "date")
+        indexes = [
+            models.Index(fields=["user", "habit", "date"]),
+        ]
 
     def __str__(self):
         return f"{self.user} - {self.habit} on {self.date}: {self.status}"
