@@ -9,5 +9,5 @@ router.register('habits', HabitViewSet, basename='habit')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('habits-progress', HabitProgressViewSet.as_view(), name='habit-progress'),
+    path('habits-progress/', HabitProgressViewSet.as_view(), name='habit-progress'),
 ]
