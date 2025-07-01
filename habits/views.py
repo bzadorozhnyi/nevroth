@@ -7,7 +7,7 @@ from rest_framework import generics
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from habits.filters import HabitFilter
+from habits.filters import HabitFilter, HabitProgressFilter
 from habits.models import Habit, HabitProgress
 from habits.permissions import RoleBasedHabitPermission
 from habits.serializers import HabitSerializer, UserHabitsUpdateSerializer, HabitProgressSerializer
@@ -38,6 +38,8 @@ class HabitViewSet(viewsets.ModelViewSet):
 
 class HabitProgressViewSet(generics.ListCreateAPIView):
     serializer_class = HabitProgressSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = HabitProgressFilter
 
     def get_queryset(self):
         return HabitProgress.objects.filter(user=self.request.user)
