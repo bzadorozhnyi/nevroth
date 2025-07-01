@@ -2,7 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from accounts.tests.factories.user import BaseUserFactory
-from habits.models import Habit, HabitProgress
+from habits.models import Habit, HabitProgress, UserHabit
 from faker import Faker
 
 faker = Faker()
@@ -22,6 +22,14 @@ class HabitCreatePayloadFactory(factory.Factory):
 
     name = factory.Sequence(lambda n: f"Habit {n}")
     description = factory.LazyFunction(lambda: faker.sentence(nb_words=10))
+
+
+class UserHabitFactory(DjangoModelFactory):
+    class Meta:
+        model = UserHabit
+
+    user = factory.SubFactory(BaseUserFactory)
+    habit = factory.SubFactory(HabitFactory)
 
 
 class HabitProgressFactory(DjangoModelFactory):

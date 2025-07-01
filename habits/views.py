@@ -4,13 +4,16 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework import filters
 from rest_framework import generics
+from rest_framework.views import APIView
 
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.translation import gettext_lazy as _
 
 from habits.filters import HabitFilter, HabitProgressFilter
-from habits.models import Habit, HabitProgress
+from habits.models import Habit, HabitProgress, UserHabit
 from habits.permissions import RoleBasedHabitPermission
 from habits.serializers import HabitSerializer, UserHabitsUpdateSerializer, HabitProgressSerializer
+from habits.services.calculate_streak import CalculateStreakService
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -43,3 +46,14 @@ class HabitProgressViewSet(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return HabitProgress.objects.filter(user=self.request.user)
+
+
+class HabitStreaksView(APIView):
+    def get(self, request, habit_id):
+        if not UserHabit.objects.filter(habit=habit_id, user=request.user.id).first():
+            return Response({"detail": _("Habit not found or not associated with user")},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        streaks = CalculateStreakService.calculate_streaks(user_id=request.user.id, habit_id=habit_id)
+
+        return Response({**streaks}, status=status.HTTP_200_OK)
