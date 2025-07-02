@@ -13,10 +13,6 @@ class HabitFilter(django_filters.FilterSet):
 
 
 class HabitProgressFilter(django_filters.FilterSet):
-    habit = django_filters.NumberFilter(
-        field_name="habit__id",
-        help_text=_("Filter habits progress by habit id"),
-    )
     date = django_filters.DateFilter(
         field_name="date",
         lookup_expr="exact",

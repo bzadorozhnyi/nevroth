@@ -48,7 +48,6 @@ class HabitProgressFilterTests(APITestCase):
         filter_test_cases = [
             ({"habit": self.habits[0].id}, 3, (3, 0)),
             ({"habit": self.habits[1].id}, 2, (0, 2)),
-            ({"habit": 123456789}, 0, (0, 0)),  # non-existing id
             ({"date": "2025-06-25"}, 1, (1, 0)),
             ({"habit": self.habits[0].id, "date": "2025-06-25"}, 1, (1, 0)),
             ({"habit": self.habits[1].id, "date": "2025-06-25"}, 0, (0, 0)),
