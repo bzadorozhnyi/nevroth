@@ -31,4 +31,4 @@ class HabitProgressFilter(django_filters.FilterSet):
 
     class Meta:
         model = HabitProgress
-        fields = ["date", "from_date", "to_date"]
+        fields = ["habit", "date", "from_date", "to_date"]
