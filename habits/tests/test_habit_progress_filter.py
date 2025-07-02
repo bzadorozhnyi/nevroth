@@ -19,13 +19,14 @@ class HabitProgressFilterTests(APITestCase):
 
         # Remove default habits
         Habit.objects.all().delete()
-        cls.habits = HabitFactory.create_batch(3)
+        cls.habits = HabitFactory.create_batch(2)
 
         cls.url = reverse("habit-progress")
 
     def _setup_test_date_range(self, user):
         # 25 26 27 28 29 (day)
         #  S  F  S  F  S (S - success, F - fail)
+        #  0  1  0  1  0 (habit's index)
 
         start_date = date(2025, 6, 25)
         end_date = date(2025, 6, 29)
@@ -35,7 +36,7 @@ class HabitProgressFilterTests(APITestCase):
 
             instance = HabitProgressFactory(
                 user=user,
-                habit=self.habits[0],
+                habit=self.habits[i % 2],
                 status=HabitProgress.Status.SUCCESS if i % 2 == 0 else HabitProgress.Status.FAIL,
             )
             HabitProgress.objects.filter(pk=instance.pk).update(date=current_date)
@@ -45,7 +46,13 @@ class HabitProgressFilterTests(APITestCase):
         self._setup_test_date_range(self.member)
 
         filter_test_cases = [
+            ({"habit": self.habits[0].id}, 3, (3, 0)),
+            ({"habit": self.habits[1].id}, 2, (0, 2)),
+            ({"habit": 123456789}, 0, (0, 0)),  # non-existing id
             ({"date": "2025-06-25"}, 1, (1, 0)),
+            ({"habit": self.habits[0].id, "date": "2025-06-25"}, 1, (1, 0)),
+            ({"habit": self.habits[1].id, "date": "2025-06-25"}, 0, (0, 0)),
+            ({"habit": self.habits[0].id, "to_date": "2025-06-27"}, 2, (2, 0)),
             ({"from_date": "2025-06-26"}, 4, (2, 2)),
             ({"to_date": "2025-06-29"}, 5, (3, 2)),
             ({"from_date": "2025-06-26", "to_date": "2025-06-28"}, 3, (1, 2)),

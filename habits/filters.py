@@ -13,6 +13,7 @@ class HabitFilter(django_filters.FilterSet):
 
 
 class HabitProgressFilter(django_filters.FilterSet):
+    habit = django_filters.NumberFilter(field_name="habit__id")
     date = django_filters.DateFilter(
         field_name="date",
         lookup_expr="exact",
@@ -31,4 +32,4 @@ class HabitProgressFilter(django_filters.FilterSet):
 
     class Meta:
         model = HabitProgress
-        fields = ["date", "from_date", "to_date"]
+        fields = ["habit", "date", "from_date", "to_date"]
