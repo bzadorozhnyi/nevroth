@@ -10,5 +10,17 @@ services:
     ports:
       - 5432:5432
 
+  api:
+    build: .
+    environment:
+      - DB_HOST=db
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_started
+
 volumes:
   postgres_data:

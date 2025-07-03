@@ -9,11 +9,13 @@ djangorestframework_simplejwt==5.5.0
 factory_boy==3.3.3
 Faker==37.4.0
 fqdn==1.5.1
+gunicorn==23.0.0
 idna==3.10
 isoduration==20.11.0
 jsonpointer==3.0.0
 jsonschema==4.24.0
 jsonschema-specifications==2025.4.1
+packaging==25.0
 psycopg2-binary==2.9.10
 PyJWT==2.9.0
 python-dateutil==2.9.0.post0
