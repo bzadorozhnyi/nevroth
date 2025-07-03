@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
+
 from accounts.models import VerifyToken
 from habits.models import UserHabit
 
@@ -31,6 +33,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You are not allowed to change your role")
         return value
 
+    @extend_schema_field(OpenApiTypes.BOOL)
     def get_selected_habits(self, obj):
         return UserHabit.objects.filter(user=obj).exists()
 

@@ -8,6 +8,7 @@ from rest_framework import serializers
 from habits import models
 from habits.constants import REQUIRED_HABITS_COUNT, HABIT_FAIL_UPDATE_TIMEOUT_SECONDS
 from habits.models import Habit, UserHabit, HabitProgress
+from habits.services.calculate_streak import CalculateStreakService
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -80,3 +81,14 @@ class HabitProgressSerializer(serializers.ModelSerializer):
             habit_progress.save()
 
         return habit_progress
+
+
+class HabitStreaksSerializer(serializers.Serializer):
+    current = serializers.IntegerField(read_only=True)
+    max = serializers.IntegerField(read_only=True)
+
+    def to_representation(self, instance):
+        user_id = self.context["user_id"]
+        habit_id = self.context["habit_id"]
+
+        return CalculateStreakService.calculate_streaks(user_id=user_id, habit_id=habit_id)

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_filters',
+    'drf_spectacular',
 
     'accounts',
     'habits',
@@ -89,12 +90,34 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Nevroth Project API",
+    "DESCRIPTION": "API for Nevroth – an app to help users track and improve their progress in overcoming harmful habits.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,  # Allows users to stay logged in
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api",
+    "SPLIT_TAGS": True,
+    "SORT_OPERATION_PARAMETERS": True,  # Sorts parameters for clarity
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    },
 }
 
 AUTH_USER_MODEL = "accounts.User"
