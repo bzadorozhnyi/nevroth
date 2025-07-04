@@ -27,6 +27,7 @@ class CurrentUserProfileView(RetrieveUpdateAPIView):
 class RegistrationView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
