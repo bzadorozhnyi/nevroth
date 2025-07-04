@@ -14,8 +14,9 @@ class BaseUserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    email = factory.LazyAttribute(lambda o: f"{faker.first_name().lower()}.{uuid.uuid4().hex
-    [:4]}@example.com")
+    email = factory.LazyAttribute(
+        lambda o: f"{faker.first_name().lower()}.{uuid.uuid4().hex[:4]}@example.com"
+    )
     full_name = factory.Faker("name")
     password = factory.PostGenerationMethodCall("set_password", "password")
 

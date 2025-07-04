@@ -13,10 +13,7 @@ class VerifyTokenTests(APITestCase):
     def test_sign_in_member(self):
         member = MemberFactory()
 
-        data = {
-            "email": member.email,
-            "password": "password"
-        }
+        data = {"email": member.email, "password": "password"}
 
         response = self.client.post(self.token_obtain_pair, data)
 

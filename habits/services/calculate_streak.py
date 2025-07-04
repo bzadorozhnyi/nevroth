@@ -14,8 +14,10 @@ class CalculateStreakService:
         """Calculate current and max streaks of habit progress"""
 
         return {
-            "current": CalculateStreakService.calculate_current_streak(user_id, habit_id),
-            "max": CalculateStreakService.calculate_max_streak(user_id, habit_id)
+            "current": CalculateStreakService.calculate_current_streak(
+                user_id, habit_id
+            ),
+            "max": CalculateStreakService.calculate_max_streak(user_id, habit_id),
         }
 
     @classmethod
@@ -27,10 +29,7 @@ class CalculateStreakService:
 
         while True:
             if HabitProgress.objects.filter(
-                    user__id=user_id,
-                    habit__id=habit_id,
-                    date=day,
-                    status="success"
+                user__id=user_id, habit__id=habit_id, date=day, status="success"
             ).exists():
                 streak += 1
                 day -= timedelta(days=1)
@@ -44,7 +43,8 @@ class CalculateStreakService:
         """Calculate max streak of habit progress"""
 
         with connection.cursor() as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
                            WITH ordered AS (SELECT
                                date
                               , status
@@ -61,6 +61,8 @@ class CalculateStreakService:
                                )
                            SELECT COALESCE(MAX(streak), 0)
                            FROM grouped;
-                           """, [user_id, habit_id])
+                           """,
+                [user_id, habit_id],
+            )
 
             return cursor.fetchone()[0]

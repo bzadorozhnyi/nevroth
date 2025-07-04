@@ -10,21 +10,24 @@ from django.utils import timezone
 
 from accounts.tests.factories.user import MemberFactory
 from habits.models import HabitProgress
-from habits.tests.factories.habit import HabitFactory, UserHabitFactory, HabitProgressFactory
+from habits.tests.factories.habit import (
+    HabitFactory,
+    UserHabitFactory,
+    HabitProgressFactory,
+)
 
 streak_schema = {
     "type": "object",
     "properties": {
         "current": {"type": "integer", "minimum": 0},
-        "max": {"type": "integer", "minimum": 0}
+        "max": {"type": "integer", "minimum": 0},
     },
     "required": ["current", "max"],
-    "additionalProperties": False
+    "additionalProperties": False,
 }
 
 
 class HabitProgressStreaksTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -48,7 +51,7 @@ class HabitProgressStreaksTests(APITestCase):
         end_date = timezone.now().date()
         start_date = end_date - timedelta(days=len(status_progress) - 1)
 
-        for (i, status_tag) in enumerate(status_progress):
+        for i, status_tag in enumerate(status_progress):
             # simulate: user skip day
             if status_tag == "E":
                 continue
@@ -58,7 +61,9 @@ class HabitProgressStreaksTests(APITestCase):
             instance = HabitProgressFactory(
                 user=self.member,
                 habit=self.habit,
-                status=HabitProgress.Status.SUCCESS if status_tag == "S" else HabitProgress.Status.FAIL,
+                status=HabitProgress.Status.SUCCESS
+                if status_tag == "S"
+                else HabitProgress.Status.FAIL,
             )
             HabitProgress.objects.filter(pk=instance.pk).update(date=current_date)
 
@@ -82,8 +87,12 @@ class HabitProgressStreaksTests(APITestCase):
             (["S", "E", "F", "F", "S", "S", "E", "E"], 0, 2),
         ]
 
-        for status_progress, expected_current_streak, expected_max_streak in streaks_test_cases:
-            with self.subTest(f"status progress {"".join(status_progress)}"):
+        for (
+            status_progress,
+            expected_current_streak,
+            expected_max_streak,
+        ) in streaks_test_cases:
+            with self.subTest(f"status progress {''.join(status_progress)}"):
                 self._setup_test_date_range(status_progress)
 
                 url = reverse(self.streaks_url, kwargs={"habit_id": self.habit.id})

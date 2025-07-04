@@ -6,32 +6,50 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('habits', '0002_load_default_habits'),
+        ("habits", "0002_load_default_habits"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='habit',
-            name='description',
-            field=models.TextField(max_length=255, verbose_name='description'),
+            model_name="habit",
+            name="description",
+            field=models.TextField(max_length=255, verbose_name="description"),
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='name'),
+            model_name="habit",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="name"),
         ),
         migrations.CreateModel(
-            name='UserHabit',
+            name="UserHabit",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('habit', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='habits.habit')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "habit",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="habits.habit"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('user', 'habit')},
+                "unique_together": {("user", "habit")},
             },
         ),
     ]

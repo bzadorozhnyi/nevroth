@@ -17,4 +17,6 @@ class VerifyTokenFactory(DjangoModelFactory):
     user = factory.SubFactory(BaseUserFactory)
     email = factory.LazyAttribute(lambda obj: obj.user.email)
     token = factory.LazyAttribute(lambda o: uuid.uuid4())
-    created_at = factory.LazyAttribute(lambda: make_aware(datetime.now() - timedelta(days=random.randint(1, 30))))
+    created_at = factory.LazyAttribute(
+        lambda: make_aware(datetime.now() - timedelta(days=random.randint(1, 30)))
+    )

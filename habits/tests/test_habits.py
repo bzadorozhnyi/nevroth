@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from accounts.tests.factories.user import (MemberFactory, AdminFactory)
+from accounts.tests.factories.user import MemberFactory, AdminFactory
 from habits.models import Habit
 from habits.tests.factories.habit import HabitFactory, HabitCreatePayloadFactory
 
@@ -27,7 +27,6 @@ habit_list_schema = {
 
 
 class HabitTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -133,9 +132,7 @@ class HabitTests(APITestCase):
         """Test that habit cannot be created without required fields."""
         self.client.force_authenticate(self.admin)
 
-        payload = {
-            "name": "just_name"
-        }
+        payload = {"name": "just_name"}
         response = self.client.post(self.list_url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 

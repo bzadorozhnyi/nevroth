@@ -9,7 +9,6 @@ from habits.tests.factories.habit import HabitFactory
 
 
 class HabitSearchFilterTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -39,8 +38,15 @@ class HabitSearchFilterTests(APITestCase):
                 self.assertEqual(len(results), expected_count)
 
                 if search_term == "Bad":
-                    self.assertTrue(any(habit["name"] == expected_values[0] for habit in results))
-                    self.assertTrue(any(habit["description"] == expected_values[1] for habit in results))
+                    self.assertTrue(
+                        any(habit["name"] == expected_values[0] for habit in results)
+                    )
+                    self.assertTrue(
+                        any(
+                            habit["description"] == expected_values[1]
+                            for habit in results
+                        )
+                    )
                 elif search_term == "Different":
                     self.assertEqual(results[0]["description"], expected_values[0])
 

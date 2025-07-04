@@ -10,24 +10,22 @@ from rest_framework.test import APITestCase
 
 from accounts.tests.factories.user import MemberFactory, AdminFactory
 from habits.models import Habit, HabitProgress
-from habits.tests.factories.habit import HabitFactory, HabitProgressSuccessFactory, HabitProgressCreatePayloadFactory, \
-    HabitProgressFailFactory
+from habits.tests.factories.habit import (
+    HabitFactory,
+    HabitProgressSuccessFactory,
+    HabitProgressCreatePayloadFactory,
+    HabitProgressFailFactory,
+)
 
 habit_progress_schema = {
     "type": "object",
     "properties": {
         "habit": {"type": "integer"},
-        "date": {
-            "type": "string",
-            "format": "date"
-        },
-        "status": {
-            "type": "string",
-            "enum": ["success", "fail"]
-        }
+        "date": {"type": "string", "format": "date"},
+        "status": {"type": "string", "enum": ["success", "fail"]},
     },
     "required": ["habit", "date", "status"],
-    "additionalProperties": False
+    "additionalProperties": False,
 }
 
 habit_progress_list_schema = {
@@ -37,7 +35,6 @@ habit_progress_list_schema = {
 
 
 class HabitProgressTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -95,10 +92,12 @@ class HabitProgressTests(APITestCase):
         response = self.client.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertTrue(HabitProgress.objects.filter(
-            user=user,
-            habit=payload["habit"],
-        ).exists())
+        self.assertTrue(
+            HabitProgress.objects.filter(
+                user=user,
+                habit=payload["habit"],
+            ).exists()
+        )
 
         habit_progress = HabitProgress.objects.filter(
             user=user,
@@ -173,10 +172,12 @@ class HabitProgressTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertTrue(HabitProgress.objects.filter(
-            user=user,
-            habit=update_payload["habit"],
-        ).exists())
+        self.assertTrue(
+            HabitProgress.objects.filter(
+                user=user,
+                habit=update_payload["habit"],
+            ).exists()
+        )
 
         habit_progress = HabitProgress.objects.filter(
             user=user,
@@ -231,10 +232,12 @@ class HabitProgressTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertTrue(HabitProgress.objects.filter(
-            user=self.member,
-            habit=update_payload["habit"],
-        ).exists())
+        self.assertTrue(
+            HabitProgress.objects.filter(
+                user=self.member,
+                habit=update_payload["habit"],
+            ).exists()
+        )
 
         habit_progress = HabitProgress.objects.filter(
             user=self.member,

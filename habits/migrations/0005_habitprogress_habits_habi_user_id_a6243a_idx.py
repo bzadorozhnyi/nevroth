@@ -5,15 +5,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('habits', '0004_habitprogress'),
+        ("habits", "0004_habitprogress"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='habitprogress',
-            index=models.Index(fields=['user', 'habit', 'date'], name='habits_habi_user_id_a6243a_idx'),
+            model_name="habitprogress",
+            index=models.Index(
+                fields=["user", "habit", "date"], name="habits_habi_user_id_a6243a_idx"
+            ),
         ),
     ]

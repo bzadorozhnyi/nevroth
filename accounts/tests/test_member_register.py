@@ -7,7 +7,6 @@ from accounts.tests.factories.user import MemberCreatePayloadFactory, MemberFact
 
 
 class MemberRegistrationTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.register_url = reverse("register")
