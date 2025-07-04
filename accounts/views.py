@@ -7,8 +7,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 
 from accounts.serializers import (
-    RegistrationSerializer, RequestForgotTokenSerializer,
-    UpdateForgottenPasswordSerializer, CurrentUserSerializer
+    RegistrationSerializer,
+    RequestForgotTokenSerializer,
+    UpdateForgottenPasswordSerializer,
+    CurrentUserSerializer,
 )
 
 User = get_user_model()

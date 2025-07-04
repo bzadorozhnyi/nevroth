@@ -1,5 +1,3 @@
-from urllib import response
-
 import jsonschema
 
 from django.urls import reverse
@@ -15,10 +13,7 @@ user_profile_schema = {
         "email": {"type": "string", "format": "email"},
         "selected_habits": {"type": "boolean"},
         "full_name": {"type": "string"},
-        "role": {
-            "type": "string",
-            "enum": ["member", "admin"]
-        },
+        "role": {"type": "string", "enum": ["member", "admin"]},
     },
     "required": ["id", "email", "selected_habits", "full_name", "role"],
     "additionalProperties": False,
@@ -26,7 +21,6 @@ user_profile_schema = {
 
 
 class CurrentProfileTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.url = reverse("user-profile")

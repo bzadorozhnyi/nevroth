@@ -4,21 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_alter_user_managers_verifytoken'),
-        ('habits', '0003_alter_habit_description_alter_habit_name_userhabit'),
+        ("accounts", "0003_alter_user_managers_verifytoken"),
+        ("habits", "0003_alter_habit_description_alter_habit_name_userhabit"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='habits',
-            field=models.ManyToManyField(through='habits.UserHabit', to='habits.habit'),
+            model_name="user",
+            name="habits",
+            field=models.ManyToManyField(through="habits.UserHabit", to="habits.habit"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='role',
-            field=models.CharField(choices=[('admin', 'admin'), ('member', 'member')], max_length=30, verbose_name='role'),
+            model_name="user",
+            name="role",
+            field=models.CharField(
+                choices=[("admin", "admin"), ("member", "member")],
+                max_length=30,
+                verbose_name="role",
+            ),
         ),
     ]

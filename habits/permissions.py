@@ -10,8 +10,8 @@ class RoleBasedHabitPermission(BasePermission):
             return False
 
         if (
-                request.method == "POST" and
-                getattr(view, "action", None) == "select_user_habits"
+            request.method == "POST"
+            and getattr(view, "action", None) == "select_user_habits"
         ):
             return request.user.role == User.Role.MEMBER
 

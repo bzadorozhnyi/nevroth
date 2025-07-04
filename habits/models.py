@@ -25,7 +25,9 @@ class HabitProgress(models.Model):
         SUCCESS = "success", _("success")
         FAIL = "fail", _("fail")
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user"))
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("user")
+    )
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE, verbose_name=_("habit"))
     date = models.DateField(_("date"), auto_now_add=True)
 

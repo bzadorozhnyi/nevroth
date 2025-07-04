@@ -6,25 +6,56 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('habits', '0003_alter_habit_description_alter_habit_name_userhabit'),
+        ("habits", "0003_alter_habit_description_alter_habit_name_userhabit"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HabitProgress',
+            name="HabitProgress",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(auto_now_add=True, verbose_name='date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='updated at')),
-                ('status', models.CharField(choices=[('success', 'success'), ('fail', 'fail')], max_length=10, verbose_name='status')),
-                ('habit', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='habits.habit', verbose_name='habit')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='user')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField(auto_now_add=True, verbose_name="date")),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="updated at"),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("success", "success"), ("fail", "fail")],
+                        max_length=10,
+                        verbose_name="status",
+                    ),
+                ),
+                (
+                    "habit",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="habits.habit",
+                        verbose_name="habit",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="user",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('user', 'habit', 'date')},
+                "unique_together": {("user", "habit", "date")},
             },
         ),
     ]

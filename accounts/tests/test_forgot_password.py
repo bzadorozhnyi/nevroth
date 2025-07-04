@@ -10,7 +10,6 @@ from accounts.tests.factories.user import MemberFactory
 
 
 class ForgotPasswordFlowTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.user = MemberFactory()
@@ -64,10 +63,7 @@ class ForgotPasswordFlowTests(APITestCase):
         self.assertIsNotNone(token)
 
         new_password = "new_secure_password"
-        update_data = {
-            "token": str(token.token),
-            "password": new_password
-        }
+        update_data = {"token": str(token.token), "password": new_password}
         update_response = self.client.post(self.update_url, update_data)
         self.assertEqual(update_response.status_code, status.HTTP_204_NO_CONTENT)
 

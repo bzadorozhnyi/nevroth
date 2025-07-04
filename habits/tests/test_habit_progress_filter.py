@@ -6,13 +6,12 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from accounts.tests.factories.user import MemberFactory, AdminFactory
+from accounts.tests.factories.user import MemberFactory
 from habits.models import Habit, HabitProgress
 from habits.tests.factories.habit import HabitFactory, HabitProgressFactory
 
 
 class HabitProgressFilterTests(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -37,7 +36,9 @@ class HabitProgressFilterTests(APITestCase):
             instance = HabitProgressFactory(
                 user=user,
                 habit=self.habits[i % 2],
-                status=HabitProgress.Status.SUCCESS if i % 2 == 0 else HabitProgress.Status.FAIL,
+                status=HabitProgress.Status.SUCCESS
+                if i % 2 == 0
+                else HabitProgress.Status.FAIL,
             )
             HabitProgress.objects.filter(pk=instance.pk).update(date=current_date)
 
@@ -55,10 +56,17 @@ class HabitProgressFilterTests(APITestCase):
             ({"from_date": "2025-06-26"}, 4, (2, 2)),
             ({"to_date": "2025-06-29"}, 5, (3, 2)),
             ({"from_date": "2025-06-26", "to_date": "2025-06-28"}, 3, (1, 2)),
-            ({"from_date": "2025-06-28", "to_date": "2025-06-25"}, 0, (0, 0)),  # invalid range
+            (
+                {"from_date": "2025-06-28", "to_date": "2025-06-25"},
+                0,
+                (0, 0),
+            ),  # invalid range
         ]
 
-        for param_value, expected_count, (expected_success_count, expected_fail_count) in filter_test_cases:
+        for param_value, expected_count, (
+            expected_success_count,
+            expected_fail_count,
+        ) in filter_test_cases:
             filter_param = "&".join(f"{k}={v}" for k, v in param_value.items())
             with self.subTest(f"filter by {filter_param}"):
                 response = self.client.get(f"{self.url}?{filter_param}")
