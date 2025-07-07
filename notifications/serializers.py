@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -20,7 +21,7 @@ class NotificationReadSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.is_read = True
-        instance.save()
+        instance.save(update_fields=["is_read"])
 
         return instance
 
@@ -31,6 +32,7 @@ class CreateNotificationForUserSerializer(serializers.Serializer):
     )
     text = serializers.CharField(required=True, max_length=300)
 
+    @transaction.atomic
     def create(self, validated_data):
         recipient = validated_data.get("recipient")
         text = validated_data.get("text")
@@ -53,6 +55,7 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
     )
     text = serializers.CharField(required=True, max_length=300)
 
+    @transaction.atomic
     def create(self, validated_data):
         habits_ids = validated_data.get("habits_ids")
         text = validated_data.get("text")
@@ -74,7 +77,7 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
             )
             for user_habit in user_habits
         ]
-        Notification.objects.bulk_create(notifications)
+        Notification.objects.bulk_create(notifications, batch_size=1000)
 
         created_count = len(notifications)
 
