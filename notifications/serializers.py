@@ -60,7 +60,9 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
 
         message = Message.objects.create(sender=sender, text=text)
 
-        user_habits = UserHabit.objects.filter(habit__id__in=habits_ids)
+        user_habits = UserHabit.objects.filter(habit__id__in=habits_ids).select_related(
+            "user"
+        )
 
         valid_habit_ids = set(user_habits.values_list("habit_id", flat=True))
         invalid_ids = list(set(habits_ids) - valid_habit_ids)
