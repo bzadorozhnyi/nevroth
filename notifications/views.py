@@ -6,7 +6,6 @@ from rest_framework import status
 
 from notifications.models import Notification
 from notifications import openapi_schemas
-from notifications.pagination import CustomPageNumberPagination
 from notifications.permissions import RoleBasedHabitPermission, IsNotificationOwner
 from notifications.serializers import (
     CreateNotificationForUserSerializer,
@@ -24,8 +23,6 @@ class NotificationViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    pagination_class = CustomPageNumberPagination
-
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user).order_by(
             "-sent_at"

@@ -34,6 +34,7 @@ class HabitViewSet(viewsets.ModelViewSet):
     ]
     ordering_fields = ["name"]
     search_fields = ["name", "description"]
+    pagination_class = None
 
     @extend_schema(
         request=UserHabitsUpdateSerializer,
@@ -54,6 +55,7 @@ class HabitProgressViewSet(generics.ListCreateAPIView):
     serializer_class = HabitProgressSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = HabitProgressFilter
+    pagination_class = None
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):

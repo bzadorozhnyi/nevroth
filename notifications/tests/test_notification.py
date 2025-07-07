@@ -17,7 +17,7 @@ from notifications.tests.factories.notification import (
     NotificationCreateForUserPayloadFactory,
     NotificationCreateByHabitsPayloadFactory,
 )
-from notifications.pagination import CustomPageNumberPagination
+from nevroth.pagination import CustomPageNumberPagination
 
 notification_detail_schema = {
     "type": "object",
