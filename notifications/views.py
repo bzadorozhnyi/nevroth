@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework import status
 
 from notifications.models import Notification
+from notifications import openapi_schemas
 from notifications.pagination import CustomPageNumberPagination
 from notifications.permissions import RoleBasedHabitPermission, IsNotificationOwner
 from notifications.serializers import (
@@ -13,6 +14,8 @@ from notifications.serializers import (
     CreateNotificationsByHabitsSerializer,
     NotificationReadSerializer,
 )
+
+from drf_spectacular.utils import extend_schema
 
 
 class NotificationViewSet(
@@ -46,6 +49,7 @@ class NotificationViewSet(
 
         return NotificationSerializer
 
+    @extend_schema(responses={204: None})
     @action(
         detail=True,
         methods=["PATCH"],
@@ -61,6 +65,10 @@ class NotificationViewSet(
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        request=CreateNotificationForUserSerializer,
+        responses={201: NotificationSerializer},
+    )
     @action(
         detail=False,
         methods=["POST"],
@@ -78,6 +86,10 @@ class NotificationViewSet(
             NotificationSerializer(notification).data, status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(
+        request=CreateNotificationsByHabitsSerializer,
+        responses={201: openapi_schemas.create_notifications_by_habits_response},
+    )
     @action(
         detail=False,
         methods=["POST"],
