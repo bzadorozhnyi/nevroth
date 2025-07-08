@@ -31,12 +31,6 @@ class NotificationViewSet(
             "-sent_at"
         )
 
-    def paginate_queryset(self, queryset):
-        if self.action == "list":
-            return super().paginate_queryset(queryset)
-
-        return None
-
     def get_permissions(self):
         if hasattr(self, "action"):
             if self.action in ["destroy", "mark_as_read"]:
