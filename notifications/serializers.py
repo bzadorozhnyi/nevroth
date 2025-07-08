@@ -48,6 +48,15 @@ class CreateNotificationForUserSerializer(serializers.Serializer):
         return notification
 
 
+class CreateNotificationsByHabitsResponseSerializer(serializers.Serializer):
+    created = serializers.IntegerField()
+    skipped = serializers.IntegerField()
+    invalid_habits_ids = serializers.ListField(
+        child=serializers.IntegerField(), default=[]
+    )
+    message = serializers.CharField()
+
+
 class CreateNotificationsByHabitsSerializer(serializers.Serializer):
     habits_ids = serializers.ListSerializer(
         child=serializers.IntegerField(),
@@ -81,10 +90,19 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
 
         created_count = len(notifications)
 
-        return {
+        response_data = {
             "created": created_count,
             "skipped": len(invalid_ids),
             "invalid_habits_ids": invalid_ids,
-            "message": f"Created {created_count} notification(s)."
-            f" {len(invalid_ids)} habits IDs were invalid and ignored.",
+            "message": (
+                f"Created {created_count} notification(s). "
+                f"{len(invalid_ids)} habits IDs were invalid and ignored."
+            ),
         }
+
+        serialized_response = CreateNotificationsByHabitsResponseSerializer(
+            data=response_data
+        )
+        serialized_response.is_valid(raise_exception=True)
+
+        return serialized_response.data

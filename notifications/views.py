@@ -5,13 +5,13 @@ from rest_framework import viewsets
 from rest_framework import status
 
 from notifications.models import Notification
-from notifications import openapi_schemas
 from notifications.permissions import RoleBasedHabitPermission, IsNotificationOwner
 from notifications.serializers import (
     CreateNotificationForUserSerializer,
     NotificationSerializer,
     CreateNotificationsByHabitsSerializer,
     NotificationReadSerializer,
+    CreateNotificationsByHabitsResponseSerializer,
 )
 
 from drf_spectacular.utils import extend_schema
@@ -85,7 +85,7 @@ class NotificationViewSet(
 
     @extend_schema(
         request=CreateNotificationsByHabitsSerializer,
-        responses={201: openapi_schemas.create_notifications_by_habits_response},
+        responses={201: CreateNotificationsByHabitsResponseSerializer},
     )
     @action(
         detail=False,
