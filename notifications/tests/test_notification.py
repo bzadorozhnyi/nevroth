@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework.settings import api_settings
 
 from accounts.tests.factories.user import MemberFactory, AdminFactory
 from habits.models import Habit
@@ -17,7 +18,6 @@ from notifications.tests.factories.notification import (
     NotificationCreateForUserPayloadFactory,
     NotificationCreateByHabitsPayloadFactory,
 )
-from nevroth.pagination import CustomPageNumberPagination
 
 notification_detail_schema = {
     "type": "object",
@@ -113,7 +113,7 @@ class NotificationTestS(APITestCase):
                     recipient=user
                 ).count()
                 self.assertEqual(data["count"], expected_total_count)
-                expected_page_size = CustomPageNumberPagination.page_size
+                expected_page_size = api_settings.DEFAULT_PAGINATION_CLASS.page_size
                 self.assertLessEqual(len(results), expected_page_size)
 
                 self.assertTrue(len(results) > 0)
