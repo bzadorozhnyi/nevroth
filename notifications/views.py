@@ -5,7 +5,10 @@ from rest_framework import viewsets
 from rest_framework import status
 
 from notifications.models import Notification
-from notifications.permissions import RoleBasedHabitPermission, IsNotificationOwner
+from notifications.permissions import (
+    RoleBasedNotificationPermission,
+    IsNotificationOwner,
+)
 from notifications.serializers import (
     CreateNotificationForUserSerializer,
     NotificationSerializer,
@@ -38,7 +41,7 @@ class NotificationViewSet(
         if hasattr(self, "action"):
             if self.action in ["destroy", "mark_as_read"]:
                 return [IsNotificationOwner()]
-        return [RoleBasedHabitPermission()]
+        return [RoleBasedNotificationPermission()]
 
     def get_serializer_class(self):
         if self.action == "mark_as_read":
