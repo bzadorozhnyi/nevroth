@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -22,6 +24,7 @@ from habits.serializers import (
 )
 
 
+@method_decorator(cache_page(60 * 5, key_prefix="habits-list"), name="list")
 class HabitViewSet(viewsets.ModelViewSet):
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer

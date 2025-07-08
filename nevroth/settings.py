@@ -167,3 +167,13 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "example_email@nevroth
 # TODO replace BASE_UI_DOMAIN's dummy value
 BASE_UI_DOMAIN = "localhost:5678"
 UI_URL_PROTOCOL = "http://"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
