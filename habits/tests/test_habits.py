@@ -1,4 +1,5 @@
 import jsonschema
+from django.core.cache import cache
 
 from django.urls import reverse
 
@@ -27,6 +28,10 @@ habit_list_schema = {
 
 
 class HabitTests(APITestCase):
+    @classmethod
+    def setUp(cls):
+        cache.clear()
+
     @classmethod
     def setUpTestData(cls):
         cls.member = MemberFactory()
@@ -67,6 +72,103 @@ class HabitTests(APITestCase):
         """Test that admin can list all habits."""
         self.client.force_authenticate(self.admin)
         self._test_list_habits_as_authenticated_user()
+
+    def _test_list_habits_with_expected_count(self, expected_count):
+        """Test that list habits return expected count of elements."""
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result = response.data
+
+        # Should see all habits
+        self.assertEqual(len(result), expected_count)
+
+        # Verify response schema
+        self._assert_list_response_schema(response.data)
+
+    def test_list_habits_after_create_new_habit(self):
+        """Test that habits listed correctly after new habit creation."""
+        # List before new habit creation
+        self.client.force_authenticate(self.admin)
+
+        # List before new habit creation
+        expected_count = len(self.habits)
+        self._test_list_habits_with_expected_count(expected_count)
+
+        # Creating new habit
+        payload = HabitCreatePayloadFactory()
+        response = self.client.post(self.list_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(Habit.objects.filter(id=response.data["id"]).exists())
+
+        # List after new habit creation
+        expected_count = len(self.habits) + 1  # old habits + new habit
+        self._test_list_habits_with_expected_count(expected_count)
+
+    def test_list_habits_after_update_new_habit(self):
+        """Test that habits listed correctly after habit update."""
+        # List before new habit creation
+        self.client.force_authenticate(self.admin)
+
+        # List before new habit creation
+        expected_count = len(self.habits)
+        self._test_list_habits_with_expected_count(expected_count)
+
+        # Updating habit
+        url = reverse(self.detail_url, kwargs={"pk": self.habits[0].pk})
+        update_payload = {
+            "name": "new_name",
+            "description": "new_description",
+        }
+
+        response = self.client.put(url, update_payload)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self._assert_detail_response_schema(response.data)
+
+        # List after new habit creation
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result = response.data
+
+        # Should see all habits
+        self.assertEqual(len(result), len(self.habits))
+
+        # Verify response schema
+        self._assert_list_response_schema(response.data)
+
+        # Verify that returned updated habit
+        habit_id = self.habits[0].pk
+        habit = next((h for h in result if h["id"] == habit_id), None)
+
+        self.assertIsNotNone(habit, f"Habit with id={habit_id} not found in response.")
+
+        self.assertEqual(habit["name"], update_payload["name"])
+        self.assertEqual(habit["description"], update_payload["description"])
+
+    def test_list_habits_after_delete_habit(self):
+        """Test that habits listed correctly after habit deletion."""
+        # List before new habit creation
+        self.client.force_authenticate(self.admin)
+
+        # List before new habit creation
+        expected_count = len(self.habits)
+        self._test_list_habits_with_expected_count(expected_count)
+
+        # Deleting habit
+        habit_to_delete = self.habits[0]
+
+        url = reverse(self.detail_url, kwargs={"pk": habit_to_delete.pk})
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Habit.objects.filter(id=habit_to_delete.pk).exists())
+
+        # List after new habit creation
+        expected_count = len(self.habits) - 1  # old habits - removed habit
+        self._test_list_habits_with_expected_count(expected_count)
 
     def test_retrieve_habit_authentication_required(self):
         """Test that authentication is required to retrieve a habit."""
