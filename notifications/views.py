@@ -27,6 +27,9 @@ class NotificationViewSet(
     viewsets.GenericViewSet,
 ):
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Notification.objects.none()
+
         return Notification.objects.filter(recipient=self.request.user).order_by(
             "-sent_at"
         )
@@ -40,6 +43,10 @@ class NotificationViewSet(
     def get_serializer_class(self):
         if self.action == "mark_as_read":
             return NotificationReadSerializer
+        elif self.action == "create_notification_for_user":
+            return CreateNotificationForUserSerializer
+        elif self.action == "create_notifications_by_habits":
+            return CreateNotificationsByHabitsSerializer
 
         return NotificationSerializer
 
@@ -53,14 +60,13 @@ class NotificationViewSet(
     def mark_as_read(self, request, pk=None):
         notification = self.get_object()
 
-        serializer = NotificationReadSerializer(notification, data={}, partial=True)
+        serializer = self.get_serializer(notification, data={}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
-        request=CreateNotificationForUserSerializer,
         responses={201: NotificationSerializer},
     )
     @action(
@@ -70,7 +76,7 @@ class NotificationViewSet(
         url_name="create_notification_for_user",
     )
     def create_notification_for_user(self, request):
-        serializer = CreateNotificationForUserSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
@@ -81,7 +87,6 @@ class NotificationViewSet(
         )
 
     @extend_schema(
-        request=CreateNotificationsByHabitsSerializer,
         responses={201: CreateNotificationsByHabitsResponseSerializer},
     )
     @action(
@@ -91,7 +96,7 @@ class NotificationViewSet(
         url_name="create_notifications_by_habits",
     )
     def create_notifications_by_habits(self, request):
-        serializer = CreateNotificationsByHabitsSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
