@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from django.db import transaction
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
+
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 from friends.models import FriendsRelation
 
@@ -44,6 +46,7 @@ class FriendshipService:
         friends_relation.delete()
 
     @classmethod
+    @transaction.atomic
     def validate_change_request_status(cls, friends_relation_id: int, user: User):
         if not FriendsRelation.objects.filter(id=friends_relation_id).exists():
             raise ValidationError(_("Friend request does not exist."))
@@ -97,6 +100,7 @@ class FriendshipService:
         ).exists()
 
     @classmethod
+    @transaction.atomic
     def remove_friend(cls, user1: User, user2: User):
         if not cls.are_friends(user1, user2):
             raise ValidationError(_("You are not friends."))
