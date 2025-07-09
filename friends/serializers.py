@@ -32,3 +32,9 @@ class SendFriendshipRequestSerializer(serializers.ModelSerializer):
         request = FriendshipService.create_send_request(from_user, to_user)
 
         return request
+
+
+class CancelFriendshipRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendsRelation
+        fields = ["id"]
