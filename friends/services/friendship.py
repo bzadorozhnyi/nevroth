@@ -44,7 +44,7 @@ class FriendshipService:
         friends_relation.delete()
 
     @classmethod
-    def validate_accept_request(cls, friends_relation_id: int, user: User):
+    def validate_change_request_status(cls, friends_relation_id: int, user: User):
         if not FriendsRelation.objects.filter(id=friends_relation_id).exists():
             raise ValidationError(_("Friend request does not exist."))
 
@@ -61,8 +61,30 @@ class FriendshipService:
             raise ValidationError(_("Friend request already rejected."))
 
     @classmethod
-    def accept_request(cls, friends_relation: FriendsRelation):
-        friends_relation.status = FriendsRelation.Status.ACCEPTED
+    def update_request_status(
+        cls, friends_relation: FriendsRelation, new_status: FriendsRelation.Status
+    ) -> FriendsRelation:
+        friends_relation.status = new_status
         friends_relation.save(update_fields=["status"])
 
         return friends_relation
+
+    @classmethod
+    def validate_accept_request(cls, friends_relation_id: int, user: User):
+        cls.validate_change_request_status(friends_relation_id, user)
+
+    @classmethod
+    def accept_request(cls, friends_relation: FriendsRelation) -> FriendsRelation:
+        return cls.update_request_status(
+            friends_relation, FriendsRelation.Status.ACCEPTED
+        )
+
+    @classmethod
+    def validate_reject_request(cls, friends_relation_id: int, user: User):
+        cls.validate_change_request_status(friends_relation_id, user)
+
+    @classmethod
+    def reject_request(cls, friends_relation: FriendsRelation) -> FriendsRelation:
+        return cls.update_request_status(
+            friends_relation, FriendsRelation.Status.REJECTED
+        )

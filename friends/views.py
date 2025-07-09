@@ -5,6 +5,7 @@ from friends.serializers import (
     SendFriendshipRequestSerializer,
     CancelFriendshipRequestSerializer,
     AcceptFriendshipRequestSerializer,
+    RejectFriendshipRequestSerializer,
 )
 from friends.services.friendship import FriendshipService
 
@@ -25,3 +26,8 @@ class CancelFriendshipRequestView(generics.DestroyAPIView):
 class AcceptFriendshipRequestView(generics.UpdateAPIView):
     queryset = FriendsRelation.objects.all()
     serializer_class = AcceptFriendshipRequestSerializer
+
+
+class RejectFriendshipRequestView(generics.UpdateAPIView):
+    queryset = FriendsRelation.objects.all()
+    serializer_class = RejectFriendshipRequestSerializer

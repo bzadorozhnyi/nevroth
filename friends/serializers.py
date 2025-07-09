@@ -56,3 +56,21 @@ class AcceptFriendshipRequestSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         return FriendshipService.accept_request(instance)
+
+
+class RejectFriendshipRequestSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    status = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = FriendsRelation
+        fields = ["id", "status"]
+
+    def validate(self, data):
+        user = self.context["request"].user
+        FriendshipService.validate_reject_request(self.instance.id, user)
+
+        return data
+
+    def update(self, instance, validated_data):
+        return FriendshipService.reject_request(instance)
