@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -31,6 +31,17 @@ class FriendshipService:
     @classmethod
     def create_send_request(cls, from_user, to_user) -> FriendsRelation:
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
+
+    @classmethod
+    def validate_cancel_request(cls, friends_relation: FriendsRelation, user: User):
+        if friends_relation.from_user != user:
+            raise PermissionDenied(_("You can only cancel requests you sent."))
+        if friends_relation.status != FriendsRelation.Status.PENDING:
+            raise ValidationError(_("Only pending requests can be cancelled."))
+
+    @classmethod
+    def cancel_request(cls, friends_relation: FriendsRelation):
+        friends_relation.delete()
 
     @classmethod
     def validate_accept_request(cls, friends_relation_id: int, user: User):

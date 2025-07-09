@@ -6,6 +6,7 @@ from friends.serializers import (
     CancelFriendshipRequestSerializer,
     AcceptFriendshipRequestSerializer,
 )
+from friends.services.friendship import FriendshipService
 
 
 class SendFriendshipRequestView(generics.CreateAPIView):
@@ -13,10 +14,12 @@ class SendFriendshipRequestView(generics.CreateAPIView):
 
 
 class CancelFriendshipRequestView(generics.DestroyAPIView):
+    queryset = FriendsRelation.objects.all()
     serializer_class = CancelFriendshipRequestSerializer
 
-    def get_queryset(self):
-        return FriendsRelation.objects.filter(from_user=self.request.user)
+    def perform_destroy(self, instance):
+        FriendshipService.validate_cancel_request(instance, self.request.user)
+        FriendshipService.cancel_request(instance)
 
 
 class AcceptFriendshipRequestView(generics.UpdateAPIView):

@@ -5,7 +5,11 @@ from django.urls import reverse
 
 from accounts.tests.factories.user import MemberFactory
 from friends.models import FriendsRelation
-from friends.tests.factories.friends_relation import FriendsRelationFactory
+from friends.tests.factories.friends_relation import (
+    FriendsRelationFactory,
+    FriendsRelationAcceptedFactory,
+    FriendsRelationRejectedFactory,
+)
 
 
 class CancelFriendshipRequestTests(APITestCase):
@@ -48,7 +52,7 @@ class CancelFriendshipRequestTests(APITestCase):
         url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_cannot_delete_friend_request_between_other_users(self):
         """Test that a friendship request cannot be deleted between others users"""
@@ -56,4 +60,30 @@ class CancelFriendshipRequestTests(APITestCase):
         url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
 
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cannot_cancel_already_accepted_friendship_request(self):
+        """Test that a friendship request cannot be canceled when already accepted"""
+        accepted_friends_relation = FriendsRelationAcceptedFactory(
+            from_user=self.user1, to_user=self.user3
+        )
+
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse(self.url, kwargs={"pk": accepted_friends_relation.id})
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_cancel_already_rejected_friendship_request(self):
+        """Test that a friendship request cannot be canceled when already rejected"""
+        rejected_friends_relation = FriendsRelationRejectedFactory(
+            from_user=self.user1, to_user=self.user3
+        )
+
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse(self.url, kwargs={"pk": rejected_friends_relation.id})
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
