@@ -10,7 +10,7 @@ User = get_user_model()
 
 class FriendshipService:
     @classmethod
-    def is_request_exist(cls, from_user, to_user) -> bool:
+    def is_relation_exist(cls, from_user, to_user) -> bool:
         return FriendsRelation.objects.filter(
             Q(from_user=from_user, to_user=to_user)
             | Q(from_user=to_user, to_user=from_user)
@@ -25,7 +25,7 @@ class FriendshipService:
     def validate_send_request(cls, from_user, to_user):
         cls.ensure_not_self_request(from_user, to_user)
 
-        if cls.is_request_exist(from_user, to_user):
+        if cls.is_relation_exist(from_user, to_user):
             raise ValidationError(_("Friend request already exists."))
 
     @classmethod
@@ -88,3 +88,22 @@ class FriendshipService:
         return cls.update_request_status(
             friends_relation, FriendsRelation.Status.REJECTED
         )
+
+    @classmethod
+    def are_friends(cls, user1: User, user2: User) -> bool:
+        return FriendsRelation.objects.filter(
+            Q(from_user=user1, to_user=user2, status=FriendsRelation.Status.ACCEPTED)
+            | Q(from_user=user2, to_user=user1, status=FriendsRelation.Status.ACCEPTED)
+        ).exists()
+
+    @classmethod
+    def remove_friend(cls, user1: User, user2: User):
+        if not cls.are_friends(user1, user2):
+            raise ValidationError(_("You are not friends."))
+
+        relation = FriendsRelation.objects.filter(
+            Q(from_user=user1, to_user=user2, status=FriendsRelation.Status.ACCEPTED)
+            | Q(from_user=user2, to_user=user1, status=FriendsRelation.Status.ACCEPTED)
+        ).first()
+
+        relation.delete()

@@ -5,6 +5,7 @@ from friends.views import (
     CancelFriendshipRequestView,
     AcceptFriendshipRequestView,
     RejectFriendshipRequestView,
+    RemoveFriendView,
 )
 
 urlpatterns = [
@@ -27,5 +28,10 @@ urlpatterns = [
         "friends/reject-request/<int:pk>/",
         RejectFriendshipRequestView.as_view(),
         name="reject-friendship-request",
+    ),
+    path(
+        "friends/remove-friend/",
+        RemoveFriendView.as_view(),
+        name="remove-friend",
     ),
 ]
