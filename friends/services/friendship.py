@@ -1,8 +1,11 @@
-from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
 from friends.models import FriendsRelation
+
+User = get_user_model()
 
 
 class FriendshipService:
@@ -28,3 +31,27 @@ class FriendshipService:
     @classmethod
     def create_send_request(cls, from_user, to_user) -> FriendsRelation:
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
+
+    @classmethod
+    def validate_accept_request(cls, friends_relation_id: int, user: User):
+        if not FriendsRelation.objects.filter(id=friends_relation_id).exists():
+            raise ValidationError(_("Friend request does not exist."))
+
+        request = FriendsRelation.objects.filter(id=friends_relation_id).first()
+
+        if request.to_user != user:
+            raise PermissionDenied(
+                _("You cannot accept friend request which hasn't been sent to you.")
+            )
+
+        if request.status == FriendsRelation.Status.ACCEPTED:
+            raise ValidationError(_("Friend request already accepted."))
+        elif request.status == FriendsRelation.Status.REJECTED:
+            raise ValidationError(_("Friend request already rejected."))
+
+    @classmethod
+    def accept_request(cls, friends_relation: FriendsRelation):
+        friends_relation.status = FriendsRelation.Status.ACCEPTED
+        friends_relation.save(update_fields=["status"])
+
+        return friends_relation

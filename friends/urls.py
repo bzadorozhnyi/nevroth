@@ -1,6 +1,10 @@
 from django.urls import path
 
-from friends.views import SendFriendshipRequestView, CancelFriendshipRequestView
+from friends.views import (
+    SendFriendshipRequestView,
+    CancelFriendshipRequestView,
+    AcceptFriendshipRequestView,
+)
 
 urlpatterns = [
     path(
@@ -12,5 +16,10 @@ urlpatterns = [
         "friends/cancel-request/<int:pk>/",
         CancelFriendshipRequestView.as_view(),
         name="cancel-friendship-request",
+    ),
+    path(
+        "friends/accept/<int:pk>/",
+        AcceptFriendshipRequestView.as_view(),
+        name="accept-friendship-request",
     ),
 ]

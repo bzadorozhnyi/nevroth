@@ -4,6 +4,7 @@ from friends.models import FriendsRelation
 from friends.serializers import (
     SendFriendshipRequestSerializer,
     CancelFriendshipRequestSerializer,
+    AcceptFriendshipRequestSerializer,
 )
 
 
@@ -16,3 +17,8 @@ class CancelFriendshipRequestView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return FriendsRelation.objects.filter(from_user=self.request.user)
+
+
+class AcceptFriendshipRequestView(generics.UpdateAPIView):
+    queryset = FriendsRelation.objects.all()
+    serializer_class = AcceptFriendshipRequestSerializer
