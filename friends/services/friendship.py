@@ -3,7 +3,7 @@ from django.db import transaction
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, NotFound
 
 from friends.models import FriendsRelation
 
@@ -58,7 +58,7 @@ class FriendshipService:
     @classmethod
     def _validate_change_status(cls, relation):
         if not relation:
-            raise PermissionDenied(_("No pending friend request found."))
+            raise NotFound(_("Friend request not found."))
 
         if relation.status == FriendsRelation.Status.ACCEPTED:
             raise ValidationError(_("Request has been already accepted."))

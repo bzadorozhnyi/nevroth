@@ -94,6 +94,15 @@ class AcceptFriendshipRequestTests(APITestCase):
         response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_cannot_accept_nonexisting_friendship_request(self):
+        """Test that cannot accept non-existing friendship requests."""
+        self.client.force_authenticate(user=self.user1)
+
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def _assert_detail_response_schema(self, data):
         """Validate that the response matches the expected schema."""
         try:
