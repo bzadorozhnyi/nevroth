@@ -55,51 +55,41 @@ class FriendshipService:
         relation.delete()
 
     @classmethod
-    @transaction.atomic
-    def validate_change_request_status(cls, friends_relation_id: int, user: User):
-        if not FriendsRelation.objects.filter(id=friends_relation_id).exists():
-            raise ValidationError(_("Friend request does not exist."))
-
-        request = FriendsRelation.objects.filter(id=friends_relation_id).first()
-
-        if request.to_user != user:
-            raise PermissionDenied(
-                _("You cannot accept friend request which hasn't been sent to you.")
-            )
-
-        if request.status == FriendsRelation.Status.ACCEPTED:
-            raise ValidationError(_("Friend request already accepted."))
-        elif request.status == FriendsRelation.Status.REJECTED:
-            raise ValidationError(_("Friend request already rejected."))
+    def _validate_change_status(cls, relation):
+        if relation.status == FriendsRelation.Status.ACCEPTED:
+            raise ValidationError(_("Request has been already accepted."))
+        if relation.status == FriendsRelation.Status.REJECTED:
+            raise ValidationError(_("Request has been already rejected."))
 
     @classmethod
-    def update_request_status(
-        cls, friends_relation: FriendsRelation, new_status: FriendsRelation.Status
-    ) -> FriendsRelation:
-        friends_relation.status = new_status
-        friends_relation.save(update_fields=["status"])
+    def accept_request(cls, from_user_id: int, to_user: User):
+        relation = FriendsRelation.objects.filter(
+            from_user__id=from_user_id, to_user=to_user
+        ).first()
+        if not relation:
+            raise PermissionDenied(_("No pending friend request found."))
 
-        return friends_relation
+        cls._validate_change_status(relation)
 
-    @classmethod
-    def validate_accept_request(cls, friends_relation_id: int, user: User):
-        cls.validate_change_request_status(friends_relation_id, user)
+        relation.status = FriendsRelation.Status.ACCEPTED
+        relation.save(update_fields=["status"])
 
-    @classmethod
-    def accept_request(cls, friends_relation: FriendsRelation) -> FriendsRelation:
-        return cls.update_request_status(
-            friends_relation, FriendsRelation.Status.ACCEPTED
-        )
+        return relation
 
     @classmethod
-    def validate_reject_request(cls, friends_relation_id: int, user: User):
-        cls.validate_change_request_status(friends_relation_id, user)
+    def reject_request(cls, from_user_id: int, to_user: User):
+        relation = FriendsRelation.objects.filter(
+            from_user__id=from_user_id, to_user=to_user
+        ).first()
+        if not relation:
+            raise PermissionDenied(_("No pending friend request found."))
 
-    @classmethod
-    def reject_request(cls, friends_relation: FriendsRelation) -> FriendsRelation:
-        return cls.update_request_status(
-            friends_relation, FriendsRelation.Status.REJECTED
-        )
+        cls._validate_change_status(relation)
+
+        relation.status = FriendsRelation.Status.REJECTED
+        relation.save(update_fields=["status"])
+
+        return relation
 
     @classmethod
     def are_friends(cls, user1: User, user2: User) -> bool:

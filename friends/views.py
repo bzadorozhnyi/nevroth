@@ -28,14 +28,30 @@ class CancelFriendshipRequestView(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AcceptFriendshipRequestView(generics.UpdateAPIView):
-    queryset = FriendsRelation.objects.all()
-    serializer_class = AcceptFriendshipRequestSerializer
+class AcceptFriendshipRequestView(APIView):
+    def patch(self, request, user_id):
+        serializer = AcceptFriendshipRequestSerializer(
+            data={"from_user_id": user_id}, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+
+        return Response(
+            AcceptFriendshipRequestSerializer(result).data, status=status.HTTP_200_OK
+        )
 
 
-class RejectFriendshipRequestView(generics.UpdateAPIView):
-    queryset = FriendsRelation.objects.all()
-    serializer_class = RejectFriendshipRequestSerializer
+class RejectFriendshipRequestView(APIView):
+    def patch(self, request, user_id):
+        serializer = RejectFriendshipRequestSerializer(
+            data={"from_user_id": user_id}, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+
+        return Response(
+            RejectFriendshipRequestSerializer(result).data, status=status.HTTP_200_OK
+        )
 
 
 class RemoveFriendView(APIView):

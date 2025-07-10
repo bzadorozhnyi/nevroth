@@ -20,12 +20,12 @@ urlpatterns = [
         name="cancel-friendship-request",
     ),
     path(
-        "friends/accept-request/<int:pk>/",
+        "friends-request/<int:user_id>/accept/",
         AcceptFriendshipRequestView.as_view(),
         name="accept-friendship-request",
     ),
     path(
-        "friends/reject-request/<int:pk>/",
+        "friends-request/<int:user_id>/reject/",
         RejectFriendshipRequestView.as_view(),
         name="reject-friendship-request",
     ),

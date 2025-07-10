@@ -16,10 +16,10 @@ from friends.tests.factories.friends_relation import (
 accept_request_response_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "integer"},
+        "from_user": {"type": "integer"},
         "status": {"type": "string", "enum": ["pending", "accepted", "rejected"]},
     },
-    "required": ["id", "status"],
+    "required": ["from_user", "status"],
     "additionalProperties": False,
 }
 
@@ -36,9 +36,9 @@ class AcceptFriendshipRequestTests(APITestCase):
     def test_accept_friendship_request_authentication_required(self):
         """Test that authentication is required for accepting friendship requests."""
         friends_relation = FriendsRelationPendingFactory()
-        url = reverse(self.url, kwargs={"pk": friends_relation.id})
+        url = reverse(self.url, kwargs={"user_id": friends_relation.from_user.id})
 
-        response = self.client.put(url)
+        response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_accept_friendship_request_success(self):
@@ -48,9 +48,10 @@ class AcceptFriendshipRequestTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user2)
 
-        url = reverse(self.url, kwargs={"pk": friends_relation.id})
+        url = reverse(self.url, kwargs={"user_id": friends_relation.from_user.id})
 
-        response = self.client.put(url)
+        response = self.client.patch(url)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertTrue(
@@ -76,9 +77,9 @@ class AcceptFriendshipRequestTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user2)
 
-        url = reverse(self.url, kwargs={"pk": friends_relation.id})
+        url = reverse(self.url, kwargs={"user_id": friends_relation.from_user.id})
 
-        response = self.client.put(url)
+        response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_accept_already_rejected_friendship_request(self):
@@ -88,9 +89,9 @@ class AcceptFriendshipRequestTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user2)
 
-        url = reverse(self.url, kwargs={"pk": friends_relation.id})
+        url = reverse(self.url, kwargs={"user_id": friends_relation.from_user.id})
 
-        response = self.client.put(url)
+        response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def _assert_detail_response_schema(self, data):

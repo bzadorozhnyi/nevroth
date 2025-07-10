@@ -23,40 +23,28 @@ class SendFriendshipRequestSerializer(serializers.ModelSerializer):
         return FriendshipService.create_send_request(from_user, to_user)
 
 
-class AcceptFriendshipRequestSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+class AcceptFriendshipRequestSerializer(serializers.Serializer):
+    from_user_id = serializers.IntegerField(required=True, write_only=True)
+    from_user = serializers.PrimaryKeyRelatedField(read_only=True)
     status = serializers.CharField(read_only=True)
 
-    class Meta:
-        model = FriendsRelation
-        fields = ["id", "status"]
+    def save(self):
+        to_user = self.context["request"].user
+        from_user_id = self.validated_data["from_user_id"]
 
-    def validate(self, data):
-        user = self.context["request"].user
-        FriendshipService.validate_accept_request(self.instance.id, user)
-
-        return data
-
-    def update(self, instance, validated_data):
-        return FriendshipService.accept_request(instance)
+        return FriendshipService.accept_request(from_user_id, to_user)
 
 
-class RejectFriendshipRequestSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+class RejectFriendshipRequestSerializer(serializers.Serializer):
+    from_user_id = serializers.IntegerField(required=True, write_only=True)
+    from_user = serializers.PrimaryKeyRelatedField(read_only=True)
     status = serializers.CharField(read_only=True)
 
-    class Meta:
-        model = FriendsRelation
-        fields = ["id", "status"]
+    def save(self):
+        to_user = self.context["request"].user
+        from_user_id = self.validated_data["from_user_id"]
 
-    def validate(self, data):
-        user = self.context["request"].user
-        FriendshipService.validate_reject_request(self.instance.id, user)
-
-        return data
-
-    def update(self, instance, validated_data):
-        return FriendshipService.reject_request(instance)
+        return FriendshipService.reject_request(from_user_id, to_user)
 
 
 class RemoveFriendSerializer(serializers.Serializer):
