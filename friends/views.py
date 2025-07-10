@@ -16,14 +16,13 @@ class SendFriendshipRequestView(generics.CreateAPIView):
     serializer_class = SendFriendshipRequestSerializer
 
 
-class CancelFriendshipRequestView(generics.DestroyAPIView):
+class CancelFriendshipRequestView(APIView):
     queryset = FriendsRelation.objects.all()
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, user_id):
         from_user = request.user
-        to_user_id = kwargs.get("user_id")
 
-        FriendshipService.cancel_request(from_user, to_user_id)
+        FriendshipService.cancel_request(from_user, user_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
