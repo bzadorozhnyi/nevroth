@@ -8,7 +8,6 @@ from friends.serializers import (
     SendFriendshipRequestSerializer,
     AcceptFriendshipRequestSerializer,
     RejectFriendshipRequestSerializer,
-    RemoveFriendSerializer,
 )
 from friends.services.friendship import FriendshipService
 
@@ -57,14 +56,7 @@ class RejectFriendshipRequestView(APIView):
 class RemoveFriendView(APIView):
     queryset = FriendsRelation.objects.all()
 
-    def delete(self, request):
-        serializer = RemoveFriendSerializer(
-            data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        FriendshipService.remove_friend(
-            request.user, serializer.validated_data["friend_id"]
-        )
+    def delete(self, request, user_id):
+        FriendshipService.remove_friend(request.user, user_id)
 
         return Response(status=status.HTTP_204_NO_CONTENT)

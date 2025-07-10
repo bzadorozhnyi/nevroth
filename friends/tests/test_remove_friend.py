@@ -7,7 +7,6 @@ from accounts.tests.factories.user import MemberFactory
 from friends.models import FriendsRelation
 from friends.tests.factories.friends_relation import (
     FriendsRelationAcceptedFactory,
-    RemoveFriendPayloadFactory,
     FriendsRelationPendingFactory,
     FriendsRelationRejectedFactory,
 )
@@ -19,15 +18,15 @@ class RemoveFriendTests(APITestCase):
         cls.user1 = MemberFactory()
         cls.user2 = MemberFactory()
 
-        cls.url = reverse("remove-friend")
+        cls.url = "remove-friend"
 
     def test_remove_friend_authentication_required(self):
         """Test that authentication is required to remove a friend."""
         FriendsRelationAcceptedFactory(from_user=self.user1, to_user=self.user2)
 
-        payload = RemoveFriendPayloadFactory(friend_id=self.user2.id)
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+        response = self.client.delete(url)
 
-        response = self.client.delete(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_remove_friend_success(self):
@@ -35,9 +34,10 @@ class RemoveFriendTests(APITestCase):
         FriendsRelationAcceptedFactory(from_user=self.user1, to_user=self.user2)
 
         self.client.force_authenticate(user=self.user1)
-        payload = RemoveFriendPayloadFactory(friend_id=self.user2.id)
 
-        response = self.client.delete(self.url, payload)
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+        response = self.client.delete(url)
+
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         self.assertFalse(
@@ -51,9 +51,9 @@ class RemoveFriendTests(APITestCase):
         FriendsRelationPendingFactory(from_user=self.user1, to_user=self.user2)
 
         self.client.force_authenticate(user=self.user1)
-        payload = RemoveFriendPayloadFactory(friend_id=self.user2.id)
 
-        response = self.client.delete(self.url, payload)
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+        response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -62,17 +62,17 @@ class RemoveFriendTests(APITestCase):
         FriendsRelationRejectedFactory(from_user=self.user1, to_user=self.user2)
 
         self.client.force_authenticate(user=self.user1)
-        payload = RemoveFriendPayloadFactory(friend_id=self.user2.id)
 
-        response = self.client.delete(self.url, payload)
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+        response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_remove_nonfriend_from_friends(self):
         """Test that a user cannot remove someone who is not a friend"""
         self.client.force_authenticate(user=self.user1)
-        payload = RemoveFriendPayloadFactory(friend_id=self.user2.id)
 
-        response = self.client.delete(self.url, payload)
+        url = reverse(self.url, kwargs={"user_id": self.user2.id})
+        response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

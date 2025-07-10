@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
@@ -45,16 +44,3 @@ class RejectFriendshipRequestSerializer(serializers.Serializer):
         from_user_id = self.validated_data["from_user_id"]
 
         return FriendshipService.reject_request(from_user_id, to_user)
-
-
-class RemoveFriendSerializer(serializers.Serializer):
-    friend_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=True
-    )
-
-    def validate_friend_id(self, friend):
-        user = self.context["request"].user
-        if not FriendshipService.are_friends(user, friend):
-            raise serializers.ValidationError(_("You are not friends."))
-
-        return friend

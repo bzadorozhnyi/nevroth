@@ -30,7 +30,7 @@ urlpatterns = [
         name="reject-friendship-request",
     ),
     path(
-        "friends/remove-friend/",
+        "friends/<int:user_id>/",
         RemoveFriendView.as_view(),
         name="remove-friend",
     ),

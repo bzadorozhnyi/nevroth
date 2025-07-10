@@ -92,21 +92,37 @@ class FriendshipService:
         return relation
 
     @classmethod
-    def are_friends(cls, user1: User, user2: User) -> bool:
+    def are_friends(cls, user1: User, user2_id: int) -> bool:
         return FriendsRelation.objects.filter(
-            Q(from_user=user1, to_user=user2, status=FriendsRelation.Status.ACCEPTED)
-            | Q(from_user=user2, to_user=user1, status=FriendsRelation.Status.ACCEPTED)
+            Q(
+                from_user=user1,
+                to_user__id=user2_id,
+                status=FriendsRelation.Status.ACCEPTED,
+            )
+            | Q(
+                from_user__id=user2_id,
+                to_user=user1,
+                status=FriendsRelation.Status.ACCEPTED,
+            )
         ).exists()
 
     @classmethod
     @transaction.atomic
-    def remove_friend(cls, user1: User, user2: User):
-        if not cls.are_friends(user1, user2):
+    def remove_friend(cls, user1: User, user2_id: int):
+        if not cls.are_friends(user1, user2_id):
             raise ValidationError(_("You are not friends."))
 
         relation = FriendsRelation.objects.filter(
-            Q(from_user=user1, to_user=user2, status=FriendsRelation.Status.ACCEPTED)
-            | Q(from_user=user2, to_user=user1, status=FriendsRelation.Status.ACCEPTED)
+            Q(
+                from_user=user1,
+                to_user__id=user2_id,
+                status=FriendsRelation.Status.ACCEPTED,
+            )
+            | Q(
+                from_user__id=user2_id,
+                to_user=user1,
+                status=FriendsRelation.Status.ACCEPTED,
+            )
         ).first()
 
         relation.delete()

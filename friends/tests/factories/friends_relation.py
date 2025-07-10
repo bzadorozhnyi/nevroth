@@ -34,10 +34,3 @@ class SendFriendshipRequestPayloadFactory(factory.Factory):
         model = dict
 
     to_user = factory.LazyAttribute(lambda o: BaseUserFactory().id)
-
-
-class RemoveFriendPayloadFactory(factory.Factory):
-    class Meta:
-        model = dict
-
-    friend_id = factory.LazyAttribute(lambda o: BaseUserFactory().id)
