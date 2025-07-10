@@ -37,10 +37,11 @@ class FriendshipService:
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
 
     @classmethod
-    def _validate_cancel_request(cls, friends_relation: FriendsRelation, user: User):
-        if friends_relation.from_user != user:
-            raise PermissionDenied(_("You can only cancel requests you sent."))
-        if friends_relation.status != FriendsRelation.Status.PENDING:
+    def _validate_cancel_request(cls, relation: FriendsRelation):
+        if not relation:
+            raise PermissionDenied(_("No pending friend request found."))
+
+        if relation.status != FriendsRelation.Status.PENDING:
             raise ValidationError(_("Only pending requests can be cancelled."))
 
     @classmethod
@@ -49,17 +50,19 @@ class FriendshipService:
         relation = FriendsRelation.objects.filter(
             from_user=from_user, to_user__id=to_user_id
         ).first()
-        if not relation:
-            raise PermissionDenied(_("No pending friend request found."))
 
-        cls._validate_cancel_request(relation, from_user)
+        cls._validate_cancel_request(relation)
 
         relation.delete()
 
     @classmethod
     def _validate_change_status(cls, relation):
+        if not relation:
+            raise PermissionDenied(_("No pending friend request found."))
+
         if relation.status == FriendsRelation.Status.ACCEPTED:
             raise ValidationError(_("Request has been already accepted."))
+
         if relation.status == FriendsRelation.Status.REJECTED:
             raise ValidationError(_("Request has been already rejected."))
 
@@ -69,8 +72,6 @@ class FriendshipService:
         relation = FriendsRelation.objects.filter(
             from_user__id=from_user_id, to_user=to_user
         ).first()
-        if not relation:
-            raise PermissionDenied(_("No pending friend request found."))
 
         cls._validate_change_status(relation)
 
@@ -85,8 +86,6 @@ class FriendshipService:
         relation = FriendsRelation.objects.filter(
             from_user__id=from_user_id, to_user=to_user
         ).first()
-        if not relation:
-            raise PermissionDenied(_("No pending friend request found."))
 
         cls._validate_change_status(relation)
 
@@ -96,26 +95,8 @@ class FriendshipService:
         return relation
 
     @classmethod
-    def are_friends(cls, user1: User, user2_id: int) -> bool:
-        return FriendsRelation.objects.filter(
-            Q(
-                from_user=user1,
-                to_user__id=user2_id,
-                status=FriendsRelation.Status.ACCEPTED,
-            )
-            | Q(
-                from_user__id=user2_id,
-                to_user=user1,
-                status=FriendsRelation.Status.ACCEPTED,
-            )
-        ).exists()
-
-    @classmethod
     @transaction.atomic
     def remove_friend(cls, user1: User, user2_id: int):
-        if not cls.are_friends(user1, user2_id):
-            raise ValidationError(_("You are not friends."))
-
         relation = FriendsRelation.objects.filter(
             Q(
                 from_user=user1,
@@ -128,5 +109,8 @@ class FriendshipService:
                 status=FriendsRelation.Status.ACCEPTED,
             )
         ).first()
+
+        if not relation:
+            raise ValidationError(_("You are not friends."))
 
         relation.delete()
