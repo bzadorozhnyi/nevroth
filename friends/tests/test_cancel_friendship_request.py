@@ -27,15 +27,20 @@ class CancelFriendshipRequestTests(APITestCase):
 
     def test_cancel_friendship_request_authentication_required(self):
         """Test that authentication is required to cancel a friendship request"""
-        url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
+        url = reverse(
+            self.url, kwargs={"user_id": self.friends_relations[0].to_user.id}
+        )
 
         response = self.client.delete(url)
+
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_cancel_friendship_request_success(self):
         """Test that a friendship request can be cancelled"""
         self.client.force_authenticate(user=self.user1)
-        url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
+        url = reverse(
+            self.url, kwargs={"user_id": self.friends_relations[0].to_user.id}
+        )
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -49,7 +54,9 @@ class CancelFriendshipRequestTests(APITestCase):
     def test_cannot_cancel_friendship_request_from_another_user(self):
         """Test that a friendship request cannot be cancelled from another user"""
         self.client.force_authenticate(user=self.user2)
-        url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
+        url = reverse(
+            self.url, kwargs={"user_id": self.friends_relations[0].to_user.id}
+        )
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -57,7 +64,9 @@ class CancelFriendshipRequestTests(APITestCase):
     def test_user_cannot_delete_friend_request_between_other_users(self):
         """Test that a friendship request cannot be deleted between others users"""
         self.client.force_authenticate(user=self.user3)
-        url = reverse(self.url, kwargs={"pk": self.friends_relations[0].id})
+        url = reverse(
+            self.url, kwargs={"user_id": self.friends_relations[0].to_user.id}
+        )
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -70,7 +79,9 @@ class CancelFriendshipRequestTests(APITestCase):
 
         self.client.force_authenticate(user=self.user1)
 
-        url = reverse(self.url, kwargs={"pk": accepted_friends_relation.id})
+        url = reverse(
+            self.url, kwargs={"user_id": accepted_friends_relation.to_user.id}
+        )
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -83,7 +94,9 @@ class CancelFriendshipRequestTests(APITestCase):
 
         self.client.force_authenticate(user=self.user1)
 
-        url = reverse(self.url, kwargs={"pk": rejected_friends_relation.id})
+        url = reverse(
+            self.url, kwargs={"user_id": rejected_friends_relation.to_user.id}
+        )
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

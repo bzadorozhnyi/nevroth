@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from friends.models import FriendsRelation
 from friends.serializers import (
     SendFriendshipRequestSerializer,
-    CancelFriendshipRequestSerializer,
     AcceptFriendshipRequestSerializer,
     RejectFriendshipRequestSerializer,
     RemoveFriendSerializer,
@@ -20,11 +19,13 @@ class SendFriendshipRequestView(generics.CreateAPIView):
 
 class CancelFriendshipRequestView(generics.DestroyAPIView):
     queryset = FriendsRelation.objects.all()
-    serializer_class = CancelFriendshipRequestSerializer
 
-    def perform_destroy(self, instance):
-        FriendshipService.validate_cancel_request(instance, self.request.user)
-        FriendshipService.cancel_request(instance)
+    def delete(self, request, *args, **kwargs):
+        from_user = request.user
+        to_user_id = kwargs.get("user_id")
+
+        FriendshipService.cancel_request(from_user, to_user_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AcceptFriendshipRequestView(generics.UpdateAPIView):

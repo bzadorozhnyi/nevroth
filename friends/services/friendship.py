@@ -36,15 +36,23 @@ class FriendshipService:
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
 
     @classmethod
-    def validate_cancel_request(cls, friends_relation: FriendsRelation, user: User):
+    def _validate_cancel_request(cls, friends_relation: FriendsRelation, user: User):
         if friends_relation.from_user != user:
             raise PermissionDenied(_("You can only cancel requests you sent."))
         if friends_relation.status != FriendsRelation.Status.PENDING:
             raise ValidationError(_("Only pending requests can be cancelled."))
 
     @classmethod
-    def cancel_request(cls, friends_relation: FriendsRelation):
-        friends_relation.delete()
+    def cancel_request(cls, from_user: User, to_user_id: int):
+        relation = FriendsRelation.objects.filter(
+            from_user=from_user, to_user__id=to_user_id
+        ).first()
+        if not relation:
+            raise PermissionDenied(_("No pending friend request found."))
+
+        cls._validate_cancel_request(relation, from_user)
+
+        relation.delete()
 
     @classmethod
     @transaction.atomic
