@@ -28,6 +28,8 @@ class CancelFriendshipRequestView(generics.DestroyAPIView):
 
 
 class AcceptFriendshipRequestView(APIView):
+    serializer_class = AcceptFriendshipRequestSerializer
+
     def patch(self, request, user_id):
         serializer = AcceptFriendshipRequestSerializer(
             data={"from_user_id": user_id}, context={"request": request}
@@ -41,6 +43,8 @@ class AcceptFriendshipRequestView(APIView):
 
 
 class RejectFriendshipRequestView(APIView):
+    serializer_class = RejectFriendshipRequestSerializer
+
     def patch(self, request, user_id):
         serializer = RejectFriendshipRequestSerializer(
             data={"from_user_id": user_id}, context={"request": request}
