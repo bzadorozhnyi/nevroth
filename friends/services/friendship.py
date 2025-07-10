@@ -12,19 +12,19 @@ User = get_user_model()
 
 class FriendshipService:
     @classmethod
-    def is_relation_exist(cls, from_user, to_user) -> bool:
+    def is_relation_exist(cls, from_user: User, to_user: User) -> bool:
         return FriendsRelation.objects.filter(
             Q(from_user=from_user, to_user=to_user)
             | Q(from_user=to_user, to_user=from_user)
         ).exists()
 
     @classmethod
-    def ensure_not_self_request(cls, from_user, to_user):
+    def ensure_not_self_request(cls, from_user: User, to_user: User):
         if from_user == to_user:
             raise ValidationError(_("You cannot send a friend request to yourself."))
 
     @classmethod
-    def _validate_send_request(cls, from_user, to_user):
+    def _validate_send_request(cls, from_user: User, to_user: User):
         cls.ensure_not_self_request(from_user, to_user)
 
         if cls.is_relation_exist(from_user, to_user):
@@ -32,7 +32,7 @@ class FriendshipService:
 
     @classmethod
     @transaction.atomic
-    def create_send_request(cls, from_user, to_user) -> FriendsRelation:
+    def create_send_request(cls, from_user: User, to_user: User) -> FriendsRelation:
         cls._validate_send_request(from_user, to_user)
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
 
@@ -56,7 +56,7 @@ class FriendshipService:
         relation.delete()
 
     @classmethod
-    def _validate_change_status(cls, relation):
+    def _validate_change_status(cls, relation: FriendsRelation):
         if not relation:
             raise NotFound(_("Friend request not found."))
 
