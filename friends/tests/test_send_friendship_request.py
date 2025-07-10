@@ -15,12 +15,10 @@ from friends.tests.factories.friends_relation import (
 friends_relation_schema = {
     "type": "object",
     "properties": {
-        "id": {"type": "integer"},
-        "from_user": {"type": "integer"},
         "to_user": {"type": "integer"},
         "status": {"type": "string", "enum": ["pending", "accepted", "rejected"]},
     },
-    "required": ["id", "from_user", "to_user", "status"],
+    "required": ["to_user", "status"],
     "additionalProperties": False,
 }
 

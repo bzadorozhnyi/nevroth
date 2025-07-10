@@ -24,7 +24,7 @@ class FriendshipService:
             raise ValidationError(_("You cannot send a friend request to yourself."))
 
     @classmethod
-    def validate_send_request(cls, from_user, to_user):
+    def _validate_send_request(cls, from_user, to_user):
         cls.ensure_not_self_request(from_user, to_user)
 
         if cls.is_relation_exist(from_user, to_user):
@@ -32,6 +32,7 @@ class FriendshipService:
 
     @classmethod
     def create_send_request(cls, from_user, to_user) -> FriendsRelation:
+        cls._validate_send_request(from_user, to_user)
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
 
     @classmethod

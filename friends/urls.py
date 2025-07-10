@@ -10,7 +10,7 @@ from friends.views import (
 
 urlpatterns = [
     path(
-        "friends/send-request/",
+        "friends-request/",
         SendFriendshipRequestView.as_view(),
         name="send-friendship-request",
     ),
