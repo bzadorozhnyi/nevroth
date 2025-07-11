@@ -15,7 +15,7 @@ urlpatterns = [
         name="send-friendship-request",
     ),
     path(
-        "friends-request/<int:user_id>/",
+        "friends-request/<int:user_id>/cancel/",
         CancelFriendshipRequestView.as_view(),
         name="cancel-friendship-request",
     ),
