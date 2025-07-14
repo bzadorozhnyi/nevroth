@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "accounts",
     "habits",
+    "friends",
     "notifications",
 ]
 
