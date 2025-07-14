@@ -58,6 +58,8 @@ class RejectFriendshipRequestView(APIView):
 
 
 class IncomingFriendshipRequestsView(APIView):
+    serializer_class = UserConnectionSerializer
+
     def get(self, request):
         incoming_requests = FriendshipService.get_incoming_requests(request.user)
         serializer = UserConnectionSerializer(incoming_requests, many=True)
@@ -66,6 +68,8 @@ class IncomingFriendshipRequestsView(APIView):
 
 
 class OutgoingFriendshipRequestsView(APIView):
+    serializer_class = UserConnectionSerializer
+
     def get(self, request):
         outgoing_requests = FriendshipService.get_outgoing_requests(request.user)
         serializer = UserConnectionSerializer(outgoing_requests, many=True)
@@ -74,6 +78,8 @@ class OutgoingFriendshipRequestsView(APIView):
 
 
 class FriendsListView(APIView):
+    serializer_class = UserConnectionSerializer
+
     def get(self, request):
         friends = FriendshipService.get_friends(request.user)
         serializer = UserConnectionSerializer(friends, many=True)
