@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.db.models.expressions import Case, When, F
+from django.db.models.fields import IntegerField
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -108,3 +110,19 @@ class FriendshipService:
             raise ValidationError(_("You are not friends."))
 
         relation.delete()
+
+    @classmethod
+    def get_friends(cls, user: User) -> list[User]:
+        friends_ids = FriendsRelation.objects.filter(
+            Q(from_user=user) | Q(to_user=user), status=FriendsRelation.Status.ACCEPTED
+        ).annotate(
+            friend_id=Case(
+                When(from_user=user, then=F("to_user")),
+                default=F("from_user"),
+                output_field=IntegerField(),
+            )
+        )
+
+        return User.objects.filter(
+            id__in=friends_ids.values_list("friend_id", flat=True)
+        )

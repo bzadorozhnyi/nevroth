@@ -8,6 +8,7 @@ from friends.serializers import (
     SendFriendshipRequestSerializer,
     AcceptFriendshipRequestSerializer,
     RejectFriendshipRequestSerializer,
+    FriendSerializer,
 )
 from friends.services.friendship import FriendshipService
 
@@ -54,6 +55,14 @@ class RejectFriendshipRequestView(APIView):
         return Response(
             RejectFriendshipRequestSerializer(result).data, status=status.HTTP_200_OK
         )
+
+
+class FriendsListView(APIView):
+    def get(self, request):
+        friends = FriendshipService.get_friends(request.user)
+        serializer = FriendSerializer(friends, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RemoveFriendView(APIView):

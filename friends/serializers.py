@@ -44,3 +44,9 @@ class RejectFriendshipRequestSerializer(serializers.Serializer):
         from_user_id = self.validated_data["from_user_id"]
 
         return FriendshipService.reject_request(from_user_id, to_user)
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "full_name"]
