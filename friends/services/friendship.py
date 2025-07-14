@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.db.models.query_utils import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -31,7 +30,6 @@ class FriendshipService:
             raise ValidationError(_("Friend request already exists."))
 
     @classmethod
-    @transaction.atomic
     def create_send_request(cls, from_user: User, to_user: User) -> FriendsRelation:
         cls._validate_send_request(from_user, to_user)
         return FriendsRelation.objects.create(from_user=from_user, to_user=to_user)
@@ -45,7 +43,6 @@ class FriendshipService:
             raise ValidationError(_("Only pending requests can be cancelled."))
 
     @classmethod
-    @transaction.atomic
     def cancel_request(cls, from_user: User, to_user_id: int):
         relation = FriendsRelation.objects.filter(
             from_user=from_user, to_user__id=to_user_id
@@ -67,7 +64,6 @@ class FriendshipService:
             raise ValidationError(_("Request has been already rejected."))
 
     @classmethod
-    @transaction.atomic
     def accept_request(cls, from_user_id: int, to_user: User):
         relation = FriendsRelation.objects.filter(
             from_user__id=from_user_id, to_user=to_user
@@ -81,7 +77,6 @@ class FriendshipService:
         return relation
 
     @classmethod
-    @transaction.atomic
     def reject_request(cls, from_user_id: int, to_user: User):
         relation = FriendsRelation.objects.filter(
             from_user__id=from_user_id, to_user=to_user
@@ -95,7 +90,6 @@ class FriendshipService:
         return relation
 
     @classmethod
-    @transaction.atomic
     def remove_friend(cls, user1: User, user2_id: int):
         relation = FriendsRelation.objects.filter(
             Q(
