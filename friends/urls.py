@@ -7,6 +7,7 @@ from friends.views import (
     RejectFriendshipRequestView,
     RemoveFriendView,
     FriendsListView,
+    IncomingFriendRequestsView,
 )
 
 urlpatterns = [
@@ -29,6 +30,11 @@ urlpatterns = [
         "friends-request/<int:user_id>/reject/",
         RejectFriendshipRequestView.as_view(),
         name="reject-friendship-request",
+    ),
+    path(
+        "friends-request/incoming/",
+        IncomingFriendRequestsView.as_view(),
+        name="incoming-friend-requests",
     ),
     path("friends/", FriendsListView.as_view(), name="friends-list"),
     path(

@@ -46,7 +46,7 @@ class RejectFriendshipRequestSerializer(serializers.Serializer):
         return FriendshipService.reject_request(from_user_id, to_user)
 
 
-class FriendSerializer(serializers.ModelSerializer):
+class UserConnectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "full_name"]

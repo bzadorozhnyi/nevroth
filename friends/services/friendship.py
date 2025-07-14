@@ -126,3 +126,11 @@ class FriendshipService:
         return User.objects.filter(
             id__in=friends_ids.values_list("friend_id", flat=True)
         )
+
+    @classmethod
+    def get_incoming_requests(cls, user: User) -> list[User]:
+        return User.objects.filter(
+            id__in=FriendsRelation.objects.filter(
+                to_user=user, status=FriendsRelation.Status.PENDING
+            ).values_list("from_user_id", flat=True)
+        )
