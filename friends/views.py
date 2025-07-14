@@ -65,6 +65,14 @@ class IncomingFriendRequestsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class OutgoingFriendRequestsView(APIView):
+    def get(self, request):
+        outgoing_requests = FriendshipService.get_outgoing_requests(request.user)
+        serializer = UserConnectionSerializer(outgoing_requests, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class FriendsListView(APIView):
     def get(self, request):
         friends = FriendshipService.get_friends(request.user)

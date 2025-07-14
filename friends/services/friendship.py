@@ -134,3 +134,11 @@ class FriendshipService:
                 to_user=user, status=FriendsRelation.Status.PENDING
             ).values_list("from_user_id", flat=True)
         )
+
+    @classmethod
+    def get_outgoing_requests(cls, user: User) -> list[User]:
+        return User.objects.filter(
+            id__in=FriendsRelation.objects.filter(
+                from_user=user, status=FriendsRelation.Status.PENDING
+            ).values_list("to_user_id", flat=True)
+        )
