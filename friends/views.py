@@ -57,7 +57,7 @@ class RejectFriendshipRequestView(APIView):
         )
 
 
-class IncomingFriendRequestsView(APIView):
+class IncomingFriendshipRequestsView(APIView):
     def get(self, request):
         incoming_requests = FriendshipService.get_incoming_requests(request.user)
         serializer = UserConnectionSerializer(incoming_requests, many=True)
@@ -65,7 +65,7 @@ class IncomingFriendRequestsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class OutgoingFriendRequestsView(APIView):
+class OutgoingFriendshipRequestsView(APIView):
     def get(self, request):
         outgoing_requests = FriendshipService.get_outgoing_requests(request.user)
         serializer = UserConnectionSerializer(outgoing_requests, many=True)
