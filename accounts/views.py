@@ -81,7 +81,7 @@ class UsersSearchView(ListAPIView):
         if getattr(self, "swagger_fake_view", False):
             return User.objects.none()
 
-        return UserService.get_user_with_relation_status(self.request.user)
+        return UserService.annotate_users_with_relation_status(self.request.user)
 
 
 class SuggestedFriendsListView(ListAPIView):
