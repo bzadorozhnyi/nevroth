@@ -89,3 +89,9 @@ class UpdateForgottenPasswordSerializer(serializers.Serializer):
         verify_token.delete()
 
         return user
+
+
+class UserSuggestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "full_name"]
