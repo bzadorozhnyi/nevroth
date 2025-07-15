@@ -9,6 +9,7 @@ from accounts.views import (
     RequestForgotPasswordView,
     UpdateForgottenPasswordView,
     CurrentUserProfileView,
+    SuggestedFriendsListView,
 )
 
 urlpatterns = [
@@ -27,5 +28,10 @@ urlpatterns = [
         "auth/password/reset/",
         UpdateForgottenPasswordView.as_view(),
         name="update_forgot_password",
+    ),
+    path(
+        "users/suggestions/",
+        SuggestedFriendsListView.as_view(),
+        name="suggested-friends-list",
     ),
 ]
