@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class UserFilter(django_filters.FilterSet):
-        query = django_filters.CharFilter(
+    query = django_filters.CharFilter(
         field_name="full_name",
         lookup_expr="icontains",
         help_text=_("Search by full name"),
@@ -22,4 +22,3 @@ class UserFilter(django_filters.FilterSet):
     class Meta:
         model = User
         fields = ["query", "habits"]
-
