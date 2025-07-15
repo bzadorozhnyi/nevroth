@@ -23,5 +23,3 @@ class UserFilter(django_filters.FilterSet):
         model = User
         fields = ["query", "habits"]
 
-    def filter_query(self, queryset, name, value):
-        return queryset.filter(full_name__icontains=value)
