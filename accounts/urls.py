@@ -9,6 +9,7 @@ from accounts.views import (
     RequestForgotPasswordView,
     UpdateForgottenPasswordView,
     CurrentUserProfileView,
+    UsersSearchView,
     SuggestedFriendsListView,
 )
 
@@ -29,6 +30,7 @@ urlpatterns = [
         UpdateForgottenPasswordView.as_view(),
         name="update_forgot_password",
     ),
+    path("users/", UsersSearchView.as_view(), name="users"),
     path(
         "users/suggestions/",
         SuggestedFriendsListView.as_view(),

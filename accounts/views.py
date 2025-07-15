@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 
 from rest_framework.views import APIView
@@ -6,11 +7,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 
+from accounts.filters import UserFilter
 from accounts.serializers import (
     RegistrationSerializer,
     RequestForgotTokenSerializer,
     UpdateForgottenPasswordSerializer,
     CurrentUserSerializer,
+    UserSearchResultSerializer,
     UserSuggestionSerializer,
 )
 from accounts.services.user import UserService
@@ -67,6 +70,18 @@ class UpdateForgottenPasswordView(GenericAPIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UsersSearchView(ListAPIView):
+    serializer_class = UserSearchResultSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return User.objects.none()
+
+        return User.objects.with_relation_status(self.request.user)
 
 
 class SuggestedFriendsListView(ListAPIView):

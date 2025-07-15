@@ -39,6 +39,11 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = "email"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["full_name"]),
+        ]
+
     def has_perm(self, perm, obj=None):
         return self.is_superuser
 

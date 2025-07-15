@@ -91,6 +91,14 @@ class UpdateForgottenPasswordSerializer(serializers.Serializer):
         return user
 
 
+class UserSearchResultSerializer(serializers.ModelSerializer):
+    relation_status = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ["id", "full_name", "relation_status"]
+
+
 class UserSuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
