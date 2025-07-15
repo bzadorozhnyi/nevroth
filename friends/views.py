@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
 
 from friends.models import FriendsRelation
 from friends.serializers import (
@@ -57,34 +58,25 @@ class RejectFriendshipRequestView(APIView):
         )
 
 
-class IncomingFriendshipRequestsView(APIView):
+class IncomingFriendshipRequestsView(ListAPIView):
     serializer_class = UserConnectionSerializer
 
-    def get(self, request):
-        incoming_requests = FriendshipService.get_incoming_requests(request.user)
-        serializer = UserConnectionSerializer(incoming_requests, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return FriendshipService.get_incoming_requests(self.request.user)
 
 
-class OutgoingFriendshipRequestsView(APIView):
+class OutgoingFriendshipRequestsView(ListAPIView):
     serializer_class = UserConnectionSerializer
 
-    def get(self, request):
-        outgoing_requests = FriendshipService.get_outgoing_requests(request.user)
-        serializer = UserConnectionSerializer(outgoing_requests, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return FriendshipService.get_outgoing_requests(self.request.user)
 
 
-class FriendsListView(APIView):
+class FriendsListView(ListAPIView):
     serializer_class = UserConnectionSerializer
 
-    def get(self, request):
-        friends = FriendshipService.get_friends(request.user)
-        serializer = UserConnectionSerializer(friends, many=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return FriendshipService.get_friends(self.request.user)
 
 
 class RemoveFriendView(APIView):
