@@ -16,4 +16,4 @@ class ChatListCreateView(ListCreateAPIView):
         if getattr(self, "swagger_fake_view", False):
             return Chat.objects.none()
 
-        return ChatService.get_chats_for_user(self.request.user)
+        return ChatService.get_user_chats(self.request.user)

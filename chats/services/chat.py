@@ -11,7 +11,7 @@ User = get_user_model()
 
 class ChatService:
     @classmethod
-    def get_chats_for_user(cls, user: User) -> list[Chat]:
+    def get_user_chats(cls, user: User) -> list[Chat]:
         return Chat.objects.filter(members__user=user).order_by("-created_at")
 
     @classmethod
