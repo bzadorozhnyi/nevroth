@@ -20,3 +20,11 @@ class ChatMemberFactory(DjangoModelFactory):
 
     chat = factory.SubFactory(ChatFactory)
     user = factory.SubFactory(BaseUserFactory)
+
+
+class PrivateChatCreatePayloadFactory(factory.Factory):
+    class Meta:
+        model = dict
+
+    member = factory.LazyAttribute(lambda o: BaseUserFactory().id)
+    chat_type = Chat.ChatType.PRIVATE

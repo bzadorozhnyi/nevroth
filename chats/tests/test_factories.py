@@ -4,6 +4,7 @@ from chats.tests.factories.chat import (
     ChatFactory,
     ChatPrivateFactory,
     ChatMemberFactory,
+    PrivateChatCreatePayloadFactory,
 )
 
 
@@ -12,3 +13,4 @@ class TestFactories(APITestCase):
         ChatFactory()
         ChatPrivateFactory()
         ChatMemberFactory()
+        PrivateChatCreatePayloadFactory()

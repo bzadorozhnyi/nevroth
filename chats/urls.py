@@ -1,11 +1,11 @@
 from django.urls.conf import path
 
-from chats.views import ChatListView
+from chats.views import ChatListCreateView
 
 urlpatterns = [
     path(
         "chats/",
-        ChatListView.as_view(),
-        name="chat-list",
-    )
+        ChatListCreateView.as_view(),
+        name="chat-list-create",
+    ),
 ]
