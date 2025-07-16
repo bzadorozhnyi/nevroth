@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "accounts",
+    "chats",
     "habits",
     "friends",
     "notifications",
