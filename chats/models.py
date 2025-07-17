@@ -39,9 +39,15 @@ class ChatMessage(models.Model):
     chat = models.ForeignKey(
         Chat, on_delete=models.CASCADE, related_name="messages", verbose_name=_("chat")
     )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_messages",
+        verbose_name=_("sender"),
+    )
 
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
 
     def __str__(self):
-        return f"[Chat {self.chat_id}] {self.content[:30]}... ({self.created_at:%Y-%m-%d %H:%M})"
+        return f"[Chat {self.chat_id}] {self.content[:30]}... by {self.sender.full_name} ({self.created_at:%Y-%m-%d %H:%M})"
