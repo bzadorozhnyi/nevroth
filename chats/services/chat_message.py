@@ -16,8 +16,3 @@ class ChatMessageService:
             raise PermissionDenied(_("User is not a member of this chat"))
 
         return ChatMessage.objects.create(sender=sender, chat=chat, content=content)
-
-    @classmethod
-    def ensure_user_is_owner(cls, message: ChatMessage, user: User):
-        if message.sender != user:
-            raise PermissionDenied(_("User is not owner of this message"))

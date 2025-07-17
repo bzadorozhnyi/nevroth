@@ -1,5 +1,6 @@
 from rest_framework import generics, mixins, viewsets
 
+from chats.permissions import IsChatMessageOwner
 from chats.serializers import (
     ChatSerializer,
     PrivateChatSerializer,
@@ -8,7 +9,6 @@ from chats.serializers import (
 )
 from chats.services.chat import ChatService
 from chats.models import Chat, ChatMessage
-from chats.services.chat_message import ChatMessageService
 
 
 class ChatListCreateView(generics.ListCreateAPIView):
@@ -31,6 +31,8 @@ class ChatMessageView(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    permission_classes = [IsChatMessageOwner]
+
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return ChatMessage.objects.none()
@@ -42,8 +44,3 @@ class ChatMessageView(
             return ChatMessageCreateSerializer
 
         return ChatMessageUpdateSerializer
-
-    def destroy(self, request, *args, **kwargs):
-        message = self.get_object()
-        ChatMessageService.ensure_user_is_owner(message, request.user)
-        return super().destroy(request, *args, **kwargs)
