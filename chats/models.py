@@ -35,7 +35,7 @@ class ChatMember(models.Model):
 
 
 class ChatMessage(models.Model):
-    content = models.CharField(_("content"), max_length=256)
+    content = models.CharField(_("content"), max_length=256, blank=False)
     chat = models.ForeignKey(
         Chat, on_delete=models.CASCADE, related_name="messages", verbose_name=_("chat")
     )
