@@ -1,6 +1,6 @@
 from rest_framework import generics, mixins, viewsets
 
-from chats.permissions import IsChatMessageOwner
+from chats.permissions import IsChatMessageOwner, IsChatMember
 from chats.serializers import (
     ChatSerializer,
     PrivateChatSerializer,
@@ -31,13 +31,19 @@ class ChatMessageView(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsChatMessageOwner]
-
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return ChatMessage.objects.none()
 
         return ChatMessage.objects.all()
+
+    def get_permissions(self):
+        if self.action == "create":
+            permission_classes = [IsChatMember]
+        elif self.action in ["update", "destroy"]:
+            permission_classes = [IsChatMessageOwner]
+
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         if self.action == "create":
