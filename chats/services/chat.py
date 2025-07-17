@@ -44,3 +44,7 @@ class ChatService:
             return existing_chat
 
         return cls.create_chat_between(user1, user2_id)
+
+    @classmethod
+    def is_member_of_chat(cls, user: User, chat: Chat) -> bool:
+        return ChatMember.objects.filter(chat=chat, user=user).exists()
