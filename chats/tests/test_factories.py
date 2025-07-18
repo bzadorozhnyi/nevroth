@@ -6,6 +6,11 @@ from chats.tests.factories.chat import (
     ChatMemberFactory,
     PrivateChatCreatePayloadFactory,
 )
+from chats.tests.factories.chat_message import (
+    ChatMessageFactory,
+    ChatMessageCreatePayloadFactory,
+    ChatMessageUpdatePayloadFactory,
+)
 
 
 class TestFactories(APITestCase):
@@ -14,3 +19,8 @@ class TestFactories(APITestCase):
         ChatPrivateFactory()
         ChatMemberFactory()
         PrivateChatCreatePayloadFactory()
+
+    def test_chat_message_factories(self):
+        ChatMessageFactory()
+        ChatMessageCreatePayloadFactory()
+        ChatMessageUpdatePayloadFactory()

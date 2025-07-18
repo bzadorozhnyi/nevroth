@@ -3,8 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
-from chats.models import Chat
+from chats.models import Chat, ChatMessage
 from chats.services.chat import ChatService
+from chats.services.chat_message import ChatMessageService
 
 User = get_user_model()
 
@@ -33,3 +34,29 @@ class PrivateChatSerializer(serializers.ModelSerializer):
         other_user_id = validated_data["member"]
 
         return ChatService.get_or_create_chat_between(user, other_user_id)
+
+
+class ChatMessageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "content", "chat"]
+
+    def create(self, validated_data):
+        sender = self.context["request"].user
+        content = validated_data["content"]
+        chat = validated_data["chat"]
+
+        return ChatMessageService.create_message(sender, chat, content)
+
+
+class ChatMessageUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "content", "chat"]
+        read_only_fields = ["id", "chat"]
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data["content"]
+        instance.save(update_fields=["content"])
+
+        return instance
