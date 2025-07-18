@@ -36,6 +36,20 @@ class PrivateChatSerializer(serializers.ModelSerializer):
         return ChatService.get_or_create_chat_between(user, other_user_id)
 
 
+class ChatMessageSenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "full_name"]
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    sender = ChatMessageSenderSerializer()
+
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "content", "sender"]
+
+
 class ChatMessageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage

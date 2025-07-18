@@ -6,6 +6,7 @@ from chats.serializers import (
     PrivateChatSerializer,
     ChatMessageCreateSerializer,
     ChatMessageUpdateSerializer,
+    ChatMessageSerializer,
 )
 from chats.services.chat import ChatService
 from chats.models import Chat, ChatMessage
@@ -23,6 +24,15 @@ class ChatListCreateView(generics.ListCreateAPIView):
             return Chat.objects.none()
 
         return ChatService.get_user_chats(self.request.user)
+
+
+class ChatMessageListView(generics.ListAPIView):
+    serializer_class = ChatMessageSerializer
+    permission_classes = [IsChatMember]
+
+    def get_queryset(self):
+        chat_id = self.kwargs.get("id")
+        return ChatMessage.objects.filter(chat_id=chat_id).order_by("-created_at")
 
 
 class ChatMessageView(
