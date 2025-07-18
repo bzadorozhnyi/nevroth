@@ -11,7 +11,7 @@ class IsChatMember(BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        chat_id = request.data.get("chat")
+        chat_id = request.data.get("chat") or view.kwargs.get("id")
         if not chat_id:
             raise ValidationError(_("Chat ID is required"))
 
