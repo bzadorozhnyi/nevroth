@@ -7,6 +7,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if not self.user.is_authenticated:
             await self.close()
+            return
 
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
         self.chat_group_name = f"chat_{self.chat_id}"
