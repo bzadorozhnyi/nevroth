@@ -1,6 +1,7 @@
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.response import Response
 
+from chats.enums import ChatWebSocketEventType
 from chats.permissions import IsChatMessageOwner, IsChatMember
 from chats.serializers import (
     ChatSerializer,
@@ -79,7 +80,7 @@ class ChatMessageView(
         async_to_sync(channel_layer.group_send)(
             group_name,
             {
-                "type": "new_message",
+                "type": ChatWebSocketEventType.NEW_MESSAGE,
                 "message": ChatMessageForWebsocketSerializer(chat_message).data,
             },
         )

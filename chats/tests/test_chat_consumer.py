@@ -70,9 +70,12 @@ class ChatConsumerTests(TransactionTestCase):
         user = await database_sync_to_async(MemberFactory)()
         token = AccessToken.for_user(user)
 
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=user)
+
         communicator = WebsocketCommunicator(
             self.application,
-            f"ws/chats/123/?token={token}",
+            f"ws/chats/{chat.id}/?token={token}",
         )
 
         connected, subprotocol = await communicator.connect()
@@ -86,9 +89,12 @@ class ChatConsumerTests(TransactionTestCase):
         user = await database_sync_to_async(MemberFactory)()
         token = AccessToken.for_user(user)
 
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=user)
+
         communicator = WebsocketCommunicator(
             application,
-            "ws/chats/123/",
+            f"ws/chats/{chat.id}/",
             headers=[
                 (b"authorization", f"Bearer {token}".encode("utf-8")),
             ],
@@ -102,13 +108,34 @@ class ChatConsumerTests(TransactionTestCase):
 
     async def test_cannot_connect_with_invalid_token(self):
         """Test that cannot connect with invalid token."""
+        user = await database_sync_to_async(MemberFactory)()
         fake_token = str(uuid.uuid4())
+
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=user)
 
         communicator = WebsocketCommunicator(
             application,
-            "ws/chats/123/",
+            f"ws/chats/{chat.id}/",
             headers=[
                 (b"authorization", f"Bearer {fake_token}".encode("utf-8")),
+            ],
+        )
+
+        connected, subprotocol = await communicator.connect()
+        self.assertFalse(connected)
+
+    async def test_cannot_connect_if_user_is_not_chat_member(self):
+        """Test that cannot connect with if user is not chat member."""
+        user = await database_sync_to_async(MemberFactory)()
+        token = AccessToken.for_user(user)
+
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        communicator = WebsocketCommunicator(
+            application,
+            f"ws/chats/{chat.id}/",
+            headers=[
+                (b"authorization", f"Bearer {token}".encode("utf-8")),
             ],
         )
 
