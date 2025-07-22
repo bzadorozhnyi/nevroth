@@ -1,5 +1,7 @@
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.response import Response
 
+from chats.enums import ChatWebSocketEventType
 from chats.permissions import IsChatMessageOwner, IsChatMember
 from chats.serializers import (
     ChatSerializer,
@@ -7,9 +9,13 @@ from chats.serializers import (
     ChatMessageCreateSerializer,
     ChatMessageUpdateSerializer,
     ChatMessageSerializer,
+    ChatMessageForWebsocketSerializer,
 )
 from chats.services.chat import ChatService
 from chats.models import Chat, ChatMessage
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 
 class ChatListCreateView(generics.ListCreateAPIView):
@@ -60,3 +66,23 @@ class ChatMessageView(
             return ChatMessageCreateSerializer
 
         return ChatMessageUpdateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        chat_message = serializer.save()
+
+        channel_layer = get_channel_layer()
+        group_name = f"chat_{chat_message.chat.id}"
+
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                "type": ChatWebSocketEventType.NEW_MESSAGE,
+                "message": ChatMessageForWebsocketSerializer(chat_message).data,
+            },
+        )
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
