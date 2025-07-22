@@ -1,3 +1,5 @@
+import json
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 
@@ -18,3 +20,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.chat_group_name, self.channel_name)
+
+    async def new_message(self, event):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "new_message",
+                    "message": event["message"],
+                }
+            )
+        )

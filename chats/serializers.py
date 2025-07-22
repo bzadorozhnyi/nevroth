@@ -74,3 +74,11 @@ class ChatMessageUpdateSerializer(serializers.ModelSerializer):
         instance.save(update_fields=["content"])
 
         return instance
+
+
+class ChatMessageForWebsocketSerializer(serializers.ModelSerializer):
+    sender = ChatMessageSenderSerializer()
+
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "content", "sender"]
