@@ -103,3 +103,9 @@ class UserSuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "full_name"]
+
+
+class UserWebSocketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "full_name"]

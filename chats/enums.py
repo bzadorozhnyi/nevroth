@@ -7,3 +7,5 @@ class ChatWebSocketCloseCode(IntEnum):
 
 class ChatWebSocketEventType(StrEnum):
     NEW_MESSAGE = "new_message"
+    TYPING = "typing"
+    STOP_TYPING = "stop_typing"
