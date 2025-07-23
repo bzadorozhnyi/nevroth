@@ -2,13 +2,13 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from accounts.serializers import UserWebSocketSerializer
-from chats.consumers.groups import WebSocketGroup
 from chats.enums import (
     ChatWebSocketCloseCode,
     ChatWebSocketClientEventType,
     ChatWebSocketServerEventType,
 )
 from chats.services.chat import ChatService
+from chats.consumers.groups import chat_group_name, user_chat_list_group_name
 
 
 class ChatListConsumer(AsyncJsonWebsocketConsumer):
@@ -19,7 +19,7 @@ class ChatListConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=ChatWebSocketCloseCode.UNAUTHORIZED)
             return
 
-        self.group_name = WebSocketGroup.chat_list(self.user.id)
+        self.group_name = user_chat_list_group_name(self.user.id)
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
         await self.accept()
@@ -45,7 +45,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
-        self.chat_group_name = WebSocketGroup.chat(self.chat_id)
+        self.chat_group_name = chat_group_name(self.chat_id)
 
         is_member = await self._is_user_in_chat(self.user, self.chat_id)
         if not is_member:

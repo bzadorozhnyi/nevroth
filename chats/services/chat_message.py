@@ -1,10 +1,10 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from chats.consumers.groups import WebSocketGroup
 from chats.enums import ChatWebSocketServerEventType
 from chats.models import Chat, ChatMessage
 from chats.services.chat import ChatService
+from chats.consumers.groups import chat_group_name, user_chat_list_group_name
 
 from django.contrib.auth import get_user_model
 
@@ -26,7 +26,7 @@ class ChatMessageService:
         channel_layer = get_channel_layer()
 
         async_to_sync(channel_layer.group_send)(
-            WebSocketGroup.chat(chat_message.chat.id),
+            chat_group_name(chat_message.chat.id),
             {
                 "type": ChatWebSocketServerEventType.NEW_MESSAGE,
                 "message": ChatMessageForWebsocketSerializer(chat_message).data,
@@ -40,7 +40,7 @@ class ChatMessageService:
                 continue
 
             async_to_sync(channel_layer.group_send)(
-                WebSocketGroup.chat_list(member_id),
+                user_chat_list_group_name(member_id),
                 {
                     "type": ChatWebSocketServerEventType.NEW_MESSAGE,
                     "message": new_message,
