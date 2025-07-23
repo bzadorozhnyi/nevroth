@@ -1,7 +1,10 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.response import Response
 
-from chats.enums import ChatWebSocketEventType
+from chats.enums import ChatWebSocketServerEventType
+from chats.models import Chat, ChatMessage
 from chats.permissions import IsChatMessageOwner, IsChatMember
 from chats.serializers import (
     ChatSerializer,
@@ -12,10 +15,6 @@ from chats.serializers import (
     ChatMessageForWebsocketSerializer,
 )
 from chats.services.chat import ChatService
-from chats.models import Chat, ChatMessage
-
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 
 
 class ChatListCreateView(generics.ListCreateAPIView):
@@ -80,7 +79,7 @@ class ChatMessageView(
         async_to_sync(channel_layer.group_send)(
             group_name,
             {
-                "type": ChatWebSocketEventType.NEW_MESSAGE,
+                "type": ChatWebSocketServerEventType.NEW_MESSAGE,
                 "message": ChatMessageForWebsocketSerializer(chat_message).data,
             },
         )

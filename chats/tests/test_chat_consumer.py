@@ -190,6 +190,52 @@ class ChatConsumerTests(TransactionTestCase):
 
         await communicator.disconnect()
 
+    async def test_typing_and_stop_typing(self):
+        """Test that typing and stopping typing works as expected."""
+        user1 = await database_sync_to_async(MemberFactory)()
+        user2 = await database_sync_to_async(MemberFactory)()
+
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=user1)
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=user2)
+
+        user1_token = AccessToken.for_user(user1)
+        user1_communicator = WebsocketCommunicator(
+            application,
+            f"ws/chats/{chat.id}/",
+            headers=[
+                (b"authorization", f"Bearer {user1_token}".encode("utf-8")),
+            ],
+        )
+        connected, _ = await user1_communicator.connect()
+        self.assertTrue(connected)
+
+        user2_token = AccessToken.for_user(user2)
+        user2_communicator = WebsocketCommunicator(
+            application,
+            f"ws/chats/{chat.id}/",
+            headers=[
+                (b"authorization", f"Bearer {user2_token}".encode("utf-8")),
+            ],
+        )
+        connected, _ = await user2_communicator.connect()
+        self.assertTrue(connected)
+
+        # user1 sends "typing"
+        await user1_communicator.send_json_to({"type": "typing"})
+        response = await user2_communicator.receive_json_from()
+        self.assertEqual(response["type"], "typing")
+        self.assertEqual(response["user"]["id"], user1.id)
+
+        # user1 sends "stop_typing"
+        await user1_communicator.send_json_to({"type": "stop_typing"})
+        response = await user2_communicator.receive_json_from()
+        self.assertEqual(response["type"], "stop_typing")
+        self.assertEqual(response["user"]["id"], user1.id)
+
+        await user1_communicator.disconnect()
+        await user2_communicator.disconnect()
+
     def _assert_new_message_event_schema(self, data):
         """Validate that the response matches the expected schema."""
         try:
