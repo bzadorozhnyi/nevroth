@@ -2,7 +2,11 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from accounts.serializers import UserWebSocketSerializer
-from chats.enums import ChatWebSocketCloseCode, ChatWebSocketEventType
+from chats.enums import (
+    ChatWebSocketCloseCode,
+    ChatWebSocketClientEventType,
+    ChatWebSocketServerEventType,
+)
 from chats.services.chat import ChatService
 
 
@@ -33,19 +37,19 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         event_type = content.get("type")
 
         match event_type:
-            case ChatWebSocketEventType.TYPING:
+            case ChatWebSocketClientEventType.TYPING:
                 await self.channel_layer.group_send(
                     self.chat_group_name,
                     {
-                        "type": "user_typing",
+                        "type": ChatWebSocketServerEventType.USER_TYPING,
                         "user": UserWebSocketSerializer(self.user).data,
                     },
                 )
-            case ChatWebSocketEventType.STOP_TYPING:
+            case ChatWebSocketClientEventType.STOP_TYPING:
                 await self.channel_layer.group_send(
                     self.chat_group_name,
                     {
-                        "type": "user_stop_typing",
+                        "type": ChatWebSocketServerEventType.USER_STOP_TYPING,
                         "user": UserWebSocketSerializer(self.user).data,
                     },
                 )
@@ -57,7 +61,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def new_message(self, event):
         await self.send_json(
             {
-                "type": ChatWebSocketEventType.NEW_MESSAGE,
+                "type": ChatWebSocketServerEventType.NEW_MESSAGE,
                 "message": event["message"],
             }
         )
@@ -66,7 +70,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if event["user"]["id"] != self.user.id:
             await self.send_json(
                 {
-                    "type": ChatWebSocketEventType.TYPING,
+                    "type": ChatWebSocketClientEventType.TYPING,
                     "user": event["user"],
                 }
             )
@@ -75,7 +79,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if event["user"]["id"] != self.user.id:
             await self.send_json(
                 {
-                    "type": ChatWebSocketEventType.STOP_TYPING,
+                    "type": ChatWebSocketClientEventType.STOP_TYPING,
                     "user": event["user"],
                 }
             )
