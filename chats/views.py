@@ -1,10 +1,6 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.response import Response
 
-from chats.consumers.groups import WebSocketGroup
-from chats.enums import ChatWebSocketServerEventType
 from chats.models import Chat, ChatMessage
 from chats.permissions import IsChatMessageOwner, IsChatMember
 from chats.serializers import (
@@ -13,8 +9,6 @@ from chats.serializers import (
     ChatMessageCreateSerializer,
     ChatMessageUpdateSerializer,
     ChatMessageSerializer,
-    ChatMessageForWebsocketSerializer,
-    NewMessageForWebsocketSerializer,
 )
 from chats.services.chat import ChatService
 
@@ -73,30 +67,6 @@ class ChatMessageView(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        chat_message = serializer.save()
-
-        channel_layer = get_channel_layer()
-
-        async_to_sync(channel_layer.group_send)(
-            WebSocketGroup.chat(chat_message.chat.id),
-            {
-                "type": ChatWebSocketServerEventType.NEW_MESSAGE,
-                "message": ChatMessageForWebsocketSerializer(chat_message).data,
-            },
-        )
-
-        members_ids = ChatService.get_chat_members_ids(chat_message.chat)
-        new_message = NewMessageForWebsocketSerializer(chat_message).data
-        for member_id in members_ids:
-            if member_id == chat_message.sender.id:
-                continue
-
-            async_to_sync(channel_layer.group_send)(
-                WebSocketGroup.chat_list(member_id),
-                {
-                    "type": ChatWebSocketServerEventType.NEW_MESSAGE,
-                    "message": new_message,
-                },
-            )
+        serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
