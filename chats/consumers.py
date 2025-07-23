@@ -1,5 +1,3 @@
-import json
-
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
@@ -57,33 +55,27 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return ChatService.is_user_in_chat(user, chat_id)
 
     async def new_message(self, event):
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": ChatWebSocketEventType.NEW_MESSAGE,
-                    "message": event["message"],
-                }
-            )
+        await self.send_json(
+            {
+                "type": ChatWebSocketEventType.NEW_MESSAGE,
+                "message": event["message"],
+            }
         )
 
     async def user_typing(self, event):
         if event["user"]["id"] != self.user.id:
-            await self.send(
-                text_data=json.dumps(
-                    {
-                        "type": ChatWebSocketEventType.TYPING,
-                        "user": event["user"],
-                    }
-                )
+            await self.send_json(
+                {
+                    "type": ChatWebSocketEventType.TYPING,
+                    "user": event["user"],
+                }
             )
 
     async def user_stop_typing(self, event):
         if event["user"]["id"] != self.user.id:
-            await self.send(
-                text_data=json.dumps(
-                    {
-                        "type": ChatWebSocketEventType.STOP_TYPING,
-                        "user": event["user"],
-                    }
-                )
+            await self.send_json(
+                {
+                    "type": ChatWebSocketEventType.STOP_TYPING,
+                    "user": event["user"],
+                }
             )
