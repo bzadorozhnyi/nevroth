@@ -48,3 +48,7 @@ class ChatService:
     @classmethod
     def is_user_in_chat(cls, user: User, chat_id: int) -> bool:
         return ChatMember.objects.filter(chat_id=chat_id, user=user).exists()
+
+    @classmethod
+    def get_chat_members_ids(cls, chat: Chat) -> list[int]:
+        return ChatMember.objects.filter(chat=chat).values_list("user", flat=True)

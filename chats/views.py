@@ -3,6 +3,7 @@ from channels.layers import get_channel_layer
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.response import Response
 
+from chats.consumers.groups import WebSocketGroup
 from chats.enums import ChatWebSocketServerEventType
 from chats.models import Chat, ChatMessage
 from chats.permissions import IsChatMessageOwner, IsChatMember
@@ -13,6 +14,7 @@ from chats.serializers import (
     ChatMessageUpdateSerializer,
     ChatMessageSerializer,
     ChatMessageForWebsocketSerializer,
+    NewMessageForWebsocketSerializer,
 )
 from chats.services.chat import ChatService
 
@@ -74,14 +76,27 @@ class ChatMessageView(
         chat_message = serializer.save()
 
         channel_layer = get_channel_layer()
-        group_name = f"chat_{chat_message.chat.id}"
 
         async_to_sync(channel_layer.group_send)(
-            group_name,
+            WebSocketGroup.chat(chat_message.chat.id),
             {
                 "type": ChatWebSocketServerEventType.NEW_MESSAGE,
                 "message": ChatMessageForWebsocketSerializer(chat_message).data,
             },
         )
+
+        members_ids = ChatService.get_chat_members_ids(chat_message.chat)
+        new_message = NewMessageForWebsocketSerializer(chat_message).data
+        for member_id in members_ids:
+            if member_id == chat_message.sender.id:
+                continue
+
+            async_to_sync(channel_layer.group_send)(
+                WebSocketGroup.chat_list(member_id),
+                {
+                    "type": ChatWebSocketServerEventType.NEW_MESSAGE,
+                    "message": new_message,
+                },
+            )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

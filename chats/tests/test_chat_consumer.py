@@ -18,7 +18,7 @@ from nevroth.asgi import application
 
 from asgiref.sync import sync_to_async
 
-message_schema = {
+chat_message_schema = {
     "type": "object",
     "properties": {
         "id": {"type": "integer", "minimum": 1},
@@ -37,11 +37,41 @@ message_schema = {
     "additionalProperties": False,
 }
 
-new_message_event_schema = {
+chat_new_message_event_schema = {
     "type": "object",
     "properties": {
         "type": {"const": "new_message"},
-        "message": message_schema,
+        "message": chat_message_schema,
+    },
+    "required": ["type", "message"],
+    "additionalProperties": False,
+}
+
+chat_list_message_schema = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer", "minimum": 1},
+        "chat": {"type": "integer", "minimum": 1},
+        "content": {"type": "string", "minLength": 1, "maxLength": 256},
+        "sender": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "minimum": 1},
+                "full_name": {"type": "string", "minLength": 1, "maxLength": 256},
+            },
+            "required": ["id", "full_name"],
+            "additionalProperties": False,
+        },
+    },
+    "required": ["id", "chat", "content", "sender"],
+    "additionalProperties": False,
+}
+
+chat_list_new_message_event_schema = {
+    "type": "object",
+    "properties": {
+        "type": {"const": "new_message"},
+        "message": chat_list_message_schema,
     },
     "required": ["type", "message"],
     "additionalProperties": False,
@@ -236,9 +266,63 @@ class ChatConsumerTests(TransactionTestCase):
         await user1_communicator.disconnect()
         await user2_communicator.disconnect()
 
+    async def test_chat_list_consumer_receives_new_message(self):
+        """Test that ChatListConsumer receives new message event when a message is sent."""
+        sender = await database_sync_to_async(MemberFactory)()
+        receiver = await database_sync_to_async(MemberFactory)()
+
+        chat = await database_sync_to_async(ChatPrivateFactory)()
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=sender)
+        await database_sync_to_async(ChatMemberFactory)(chat=chat, user=receiver)
+
+        sender_token = AccessToken.for_user(sender)
+        receiver_token = AccessToken.for_user(receiver)
+
+        # connect receiver to ChatListConsumer
+        chat_list_communicator = WebsocketCommunicator(
+            application,
+            "ws/chat-list/",
+            headers=[(b"authorization", f"Bearer {receiver_token}".encode("utf-8"))],
+        )
+        connected, _ = await chat_list_communicator.connect()
+        self.assertTrue(connected)
+
+        # sender sends message
+        client = APIClient()
+        client.force_authenticate(user=sender, token=sender_token)
+
+        payload = await database_sync_to_async(ChatMessageCreatePayloadFactory)(
+            chat=chat.id
+        )
+        response = await sync_to_async(client.post)(self.list_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # receiver gets update via chat list socket
+        response = await chat_list_communicator.receive_json_from()
+
+        self.assertEqual(response["type"], "new_message")
+        message = response["message"]
+
+        self.assertEqual(message["chat"], chat.id)
+        self.assertEqual(message["sender"]["id"], sender.id)
+        self.assertEqual(message["content"], payload["content"])
+
+        self._assert_chat_list_new_message_event_schema(response)
+
+        await chat_list_communicator.disconnect()
+
     def _assert_new_message_event_schema(self, data):
         """Validate that the response matches the expected schema."""
         try:
-            jsonschema.validate(instance=data, schema=new_message_event_schema)
+            jsonschema.validate(instance=data, schema=chat_new_message_event_schema)
+        except jsonschema.exceptions.ValidationError as e:
+            self.fail(f"Response does not match schema: {e}")
+
+    def _assert_chat_list_new_message_event_schema(self, data):
+        """Validate that the response matches the expected schema."""
+        try:
+            jsonschema.validate(
+                instance=data, schema=chat_list_new_message_event_schema
+            )
         except jsonschema.exceptions.ValidationError as e:
             self.fail(f"Response does not match schema: {e}")

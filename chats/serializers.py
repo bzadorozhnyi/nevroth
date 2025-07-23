@@ -82,3 +82,11 @@ class ChatMessageForWebsocketSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
         fields = ["id", "content", "sender"]
+
+
+class NewMessageForWebsocketSerializer(serializers.ModelSerializer):
+    sender = ChatMessageSenderSerializer()
+
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "chat", "content", "sender"]
