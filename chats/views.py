@@ -2,7 +2,7 @@ from rest_framework import generics, mixins, viewsets
 
 from chats.models import Chat, ChatMessage
 from chats.permissions import IsChatMessageOwner, IsChatMember
-from chats.serializers import (
+from chats.serializers.chat import (
     ChatSerializer,
     PrivateChatSerializer,
     ChatMessageCreateSerializer,

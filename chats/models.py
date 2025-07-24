@@ -49,14 +49,5 @@ class ChatMessage(models.Model):
     created_at = models.DateTimeField(_("created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("updated at"), auto_now=True)
 
-    def save(self, *args, **kwargs):
-        creating = True if not self.pk else False
-        super().save(*args, **kwargs)
-
-        if creating:
-            from chats.services.chat_message import ChatMessageService
-
-            ChatMessageService.notify_new_message(self)
-
     def __str__(self):
         return f"[Chat {self.chat_id}] {self.content[:30]}... by {self.sender.full_name} ({self.created_at:%Y-%m-%d %H:%M})"

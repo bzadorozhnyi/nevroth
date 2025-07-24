@@ -3,6 +3,10 @@ from channels.layers import get_channel_layer
 
 from chats.enums import ChatWebSocketServerEventType
 from chats.models import Chat, ChatMessage
+from chats.serializers.websocket import (
+    ChatMessageForWebsocketSerializer,
+    NewMessageForWebsocketSerializer,
+)
 from chats.services.chat import ChatService
 from chats.consumers.groups import get_chat_group_name, get_user_chat_list_group_name
 
@@ -17,12 +21,7 @@ class ChatMessageService:
         return ChatMessage.objects.create(sender=sender, chat=chat, content=content)
 
     @classmethod
-    def notify_new_message(cls, chat_message: ChatMessage):
-        from chats.serializers import (
-            ChatMessageForWebsocketSerializer,
-            NewMessageForWebsocketSerializer,
-        )
-
+    def notify_about_new_message(cls, chat_message: ChatMessage):
         channel_layer = get_channel_layer()
 
         async_to_sync(channel_layer.group_send)(
