@@ -8,6 +8,32 @@ from chats.enums import (
     ChatWebSocketServerEventType,
 )
 from chats.services.chat import ChatService
+from chats.consumers.groups import get_chat_group_name, get_user_chat_list_group_name
+
+
+class ChatListConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+
+        if not self.user.is_authenticated:
+            await self.close(code=ChatWebSocketCloseCode.UNAUTHORIZED)
+            return
+
+        self.group_name = get_user_chat_list_group_name(self.user.id)
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def new_message(self, event):
+        await self.send_json(
+            {
+                "type": ChatWebSocketServerEventType.NEW_MESSAGE,
+                "message": event["message"],
+            }
+        )
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -15,11 +41,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.user = self.scope["user"]
 
         if not self.user.is_authenticated:
-            await self.close()
+            await self.close(code=ChatWebSocketCloseCode.UNAUTHORIZED)
             return
 
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
-        self.chat_group_name = f"chat_{self.chat_id}"
+        self.chat_group_name = get_chat_group_name(self.chat_id)
 
         is_member = await self._is_user_in_chat(self.user, self.chat_id)
         if not is_member:

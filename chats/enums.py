@@ -3,6 +3,7 @@ from enum import IntEnum, StrEnum
 
 class ChatWebSocketCloseCode(IntEnum):
     NOT_A_PARTICIPANT = 4001
+    UNAUTHORIZED = 4002
 
 
 class ChatWebSocketClientEventType(StrEnum):

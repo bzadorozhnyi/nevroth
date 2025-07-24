@@ -1,13 +1,11 @@
-from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
 from chats.models import Chat, ChatMessage
+from chats.serializers.sender import ChatMessageSenderSerializer
 from chats.services.chat import ChatService
 from chats.services.chat_message import ChatMessageService
-
-User = get_user_model()
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -34,12 +32,6 @@ class PrivateChatSerializer(serializers.ModelSerializer):
         other_user_id = validated_data["member"]
 
         return ChatService.get_or_create_chat_between(user, other_user_id)
-
-
-class ChatMessageSenderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "full_name"]
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
@@ -74,11 +66,3 @@ class ChatMessageUpdateSerializer(serializers.ModelSerializer):
         instance.save(update_fields=["content"])
 
         return instance
-
-
-class ChatMessageForWebsocketSerializer(serializers.ModelSerializer):
-    sender = ChatMessageSenderSerializer()
-
-    class Meta:
-        model = ChatMessage
-        fields = ["id", "content", "sender"]
