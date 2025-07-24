@@ -15,11 +15,14 @@ click-plugins==1.1.1.2
 click-repl==0.3.0
 constantly==23.10.4
 coverage==7.9.1
+cron-descriptor==1.4.5
 cryptography==45.0.5
 daphne==4.2.1
 Django==5.2.3
+django-celery-beat==2.8.1
 django-filter==25.1
 django-redis==6.0.0
+django-timezone-field==7.1
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 drf-spectacular==0.28.0
@@ -45,6 +48,7 @@ pyasn1_modules==0.4.2
 pycparser==2.22
 PyJWT==2.9.0
 pyOpenSSL==25.1.0
+python-crontab==3.3.0
 python-dateutil==2.9.0.post0
 PyYAML==6.0.2
 redis==6.2.0
