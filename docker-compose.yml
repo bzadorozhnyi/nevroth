@@ -63,6 +63,15 @@ services:
       celery:
         condition: service_started
 
+  flower:
+    image: mher/flower:latest
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/2
+    depends_on:
+      - redis
+
 volumes:
   postgres_data:
   redis_data:
