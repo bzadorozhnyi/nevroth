@@ -8,7 +8,7 @@ from chats.enums import (
     ChatWebSocketServerEventType,
 )
 from chats.services.chat import ChatService
-from chats.consumers.groups import chat_group_name, user_chat_list_group_name
+from chats.consumers.groups import get_chat_group_name, get_user_chat_list_group_name
 
 
 class ChatListConsumer(AsyncJsonWebsocketConsumer):
@@ -19,7 +19,7 @@ class ChatListConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=ChatWebSocketCloseCode.UNAUTHORIZED)
             return
 
-        self.group_name = user_chat_list_group_name(self.user.id)
+        self.group_name = get_user_chat_list_group_name(self.user.id)
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
         await self.accept()
@@ -45,7 +45,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
-        self.chat_group_name = chat_group_name(self.chat_id)
+        self.chat_group_name = get_chat_group_name(self.chat_id)
 
         is_member = await self._is_user_in_chat(self.user, self.chat_id)
         if not is_member:
