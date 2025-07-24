@@ -7,15 +7,19 @@ For more information on this file, see
 https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
+# ruff: noqa: E402
+
+import django
 import os
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nevroth.settings")
+django.setup()
 
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 from chats.routing import websocket_urlpatterns
 from middlewares.jwt_auth import JWTAuthMiddleware
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nevroth.settings")
 
 django_asgi_app = get_asgi_application()
 
