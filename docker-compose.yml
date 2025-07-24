@@ -31,6 +31,21 @@ services:
       db:
         condition: service_started
 
+  celery:
+    build: .
+    command: celery -A nevroth worker --loglevel=info
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+
 volumes:
   postgres_data:
   redis_data:
