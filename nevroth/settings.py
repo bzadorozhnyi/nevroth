@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "channels",
     "daphne",
+    "django_celery_beat",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -195,3 +196,10 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Celery Configuration Options
+CELERY_BROKER_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/2")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/3")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
