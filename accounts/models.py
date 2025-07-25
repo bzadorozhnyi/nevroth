@@ -1,6 +1,5 @@
 import uuid
 
-from django.core.mail import send_mail
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -8,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from accounts.managers import UserManager
 from django.conf import settings
 
+from accounts.tasks import send_mail_task
 from habits.models import Habit
 
 
@@ -75,9 +75,8 @@ class VerifyToken(models.Model):
         subject = _("Nevroth Restore Password")
         plain_text = f"Restore password link: {self.restore_link}"
 
-        send_mail(
-            subject=subject,
-            message=plain_text,
-            recipient_list=[self.email],
-            from_email=settings.DEFAULT_FROM_EMAIL,
+        send_mail_task.delay(
+            subject,
+            plain_text,
+            [self.email],
         )

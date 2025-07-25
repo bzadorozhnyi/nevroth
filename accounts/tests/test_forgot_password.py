@@ -2,6 +2,8 @@ import uuid
 
 from django.urls import reverse
 from django.core import mail
+from django.conf import settings
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -27,6 +29,8 @@ class ForgotPasswordFlowTests(APITestCase):
         Verify that requesting a forgot password for a registered user creates a VerifyToken
         and sends an email.
         """
+
+        settings.CELERY_TASK_ALWAYS_EAGER = True
 
         data = {"email": self.user.email}
         response = self.client.post(self.request_url, data)
