@@ -66,7 +66,6 @@ class MemberRegistrationTests(APITestCase):
 
         user = User.objects.get(email=payload["email"])
 
-        self.assertTrue(mock_apply_async.called)
         mock_apply_async.assert_called_once()
 
         args, kwargs = mock_apply_async.call_args
