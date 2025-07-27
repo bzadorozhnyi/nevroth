@@ -28,3 +28,7 @@ class UserService:
         )
 
         return similar_users
+
+    @classmethod
+    def has_selected_habits(cls, user_id: int) -> bool:
+        return UserHabit.objects.filter(user_id=user_id).exists()

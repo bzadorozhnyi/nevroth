@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -203,3 +204,6 @@ CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_POR
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+
+FOLLOW_UP_HABIT_DELAY = timedelta(hours=1).seconds

@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from accounts.managers import UserManager
 from django.conf import settings
 
-from accounts.tasks import send_mail_task
+from accounts.tasks.email import send_mail_task
 from habits.models import Habit
 
 

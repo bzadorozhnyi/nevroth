@@ -1,3 +1,4 @@
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 
@@ -17,6 +18,7 @@ from accounts.serializers import (
     UserSuggestionSerializer,
 )
 from accounts.services.user import UserService
+from accounts.tasks.followup import follow_up_no_habits_selected_task
 
 User = get_user_model()
 
@@ -39,7 +41,11 @@ class RegistrationView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
+
+        follow_up_no_habits_selected_task.s(user.id).apply_async(
+            countdown=settings.FOLLOW_UP_HABIT_DELAY,
+        )
 
         return Response(status=status.HTTP_201_CREATED)
 

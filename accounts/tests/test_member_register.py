@@ -1,4 +1,7 @@
+from unittest.mock import patch
+
 from django.urls import reverse
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -50,3 +53,26 @@ class MemberRegistrationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("email", response.data)
         self.assertIn("full_name", response.data)
+
+    @patch("accounts.tasks.followup.follow_up_no_habits_selected_task.apply_async")
+    def test_schedules_reminder_task_if_no_habits_selected(self, mock_apply_async):
+        """Should schedule follow-up task if user did not select any habits after registration."""
+        payload = MemberCreatePayloadFactory()
+
+        response = self.client.post(self.register_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(User.objects.filter(email=payload["email"]).exists())
+
+        user = User.objects.get(email=payload["email"])
+
+        self.assertTrue(mock_apply_async.called)
+        mock_apply_async.assert_called_once()
+
+        args, kwargs = mock_apply_async.call_args
+        self.assertEqual(args[0], (user.id,))
+        self.assertEqual(args[1], {})  # empty kwargs
+
+        countdown = kwargs.get("countdown")
+        self.assertIsNotNone(countdown)
+        self.assertEqual(countdown, 3600)  # 1 hour
