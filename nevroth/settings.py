@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -204,5 +205,13 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 
+CELERY_BEAT_SCHEDULE = {
+    "delete-old-chat-messages-every-night": {
+        "task": "chats.tasks.cleanup.cleanup_old_messages_task",
+        "schedule": crontab(minute=0, hour=3),  # Every day at 03:00 AM
+        "args": [],
+    },
+}
 
 FOLLOW_UP_HABIT_DELAY = 3600  # 1 hour in seconds
+OLD_MESSAGE_RETENTION_DAYS = 30  # in days
