@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from celery.schedules import crontab
 
@@ -25,6 +26,7 @@ SECRET_KEY = "django-insecure-dds5+v5zy)te0=c^oaxh)1rs9tkitixfp(z#3w1g_&i6coq02+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TESTING = "test" in sys.argv
 
 ALLOWED_HOSTS = []
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_filters",
     "drf_spectacular",
+    "storages",
     "accounts",
     "chats",
     "habits",
@@ -215,3 +218,48 @@ CELERY_BEAT_SCHEDULE = {
 
 FOLLOW_UP_HABIT_DELAY = 3600  # 1 hour in seconds
 OLD_MESSAGE_RETENTION_DAYS = 30
+
+
+if not TESTING:
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "local-bucket")
+    AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID", "test")
+    AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "test")
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "eu-north-1")
+    AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "http://localhost:4566")
+    AWS_QUERYSTRING_AUTH = True
+    AWS_QUERYSTRING_EXPIRE = 3600
+    AWS_S3_FILE_OVERWRITE = False
+
+    STATIC_URL = "/static/"
+    MEDIA_URL = "/media/"
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "nevroth.storages.CustomS3Storage",
+            "OPTIONS": {
+                "access_key": AWS_S3_ACCESS_KEY_ID,
+                "secret_key": AWS_S3_SECRET_ACCESS_KEY,
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "default_acl": None,
+                "region_name": AWS_S3_REGION_NAME,
+                "endpoint_url": AWS_S3_ENDPOINT_URL,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "nevroth.storages.CustomS3Storage",
+            "OPTIONS": {
+                "access_key": AWS_S3_ACCESS_KEY_ID,
+                "secret_key": AWS_S3_SECRET_ACCESS_KEY,
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "default_acl": None,
+                "region_name": AWS_S3_REGION_NAME,
+                "endpoint_url": AWS_S3_ENDPOINT_URL,
+            },
+        },
+    }
+else:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+    STATIC_URL = "/static/"
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
