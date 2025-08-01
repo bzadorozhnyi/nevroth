@@ -50,6 +50,16 @@ Use Docker Compose for easy local setup. It starts the API and PostgreSQL databa
   
 Access the admin panel at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
 
+### 🚀 CI/CD with GitHub Actions
+
+This project includes a GitHub Actions workflow:
+
+- Automatically runs on `push` and `pull_request` events to the `main` branch.
+- Spins up PostgreSQL and Redis services for integration testing.
+- Runs code quality checks with Ruff.
+- Builds a Docker image tagged with the commit SHA.
+- Executes Django database migrations and tests inside the Docker container.
+
 ### ⏳ Background Tasks with Celery
 
 To ensure fast API response times and a smooth user experience, Nevroth offloads time-consuming tasks to Celery workers.
