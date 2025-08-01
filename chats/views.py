@@ -48,12 +48,10 @@ class ChatMessageView(
         return ChatMessage.objects.all()
 
     def get_permissions(self):
-        if self.action == "create":
-            permission_classes = [IsChatMember]
-        elif self.action in ["update", "destroy"]:
-            permission_classes = [IsChatMessageOwner]
+        if self.action in ["update", "destroy"]:
+            return [IsChatMessageOwner()]
 
-        return [permission() for permission in permission_classes]
+        return [IsChatMember()]
 
     def get_serializer_class(self):
         if self.action == "create":
