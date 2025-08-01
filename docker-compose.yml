@@ -72,6 +72,25 @@ services:
     depends_on:
       - redis
 
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DISABLE_CORS_CHECKS=1
+      - DATA_DIR=/var/lib/localstack/data
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./localstack-init:/etc/localstack/init/ready.d
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4566/_localstack/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
 volumes:
   postgres_data:
   redis_data:
+  localstack_data:
