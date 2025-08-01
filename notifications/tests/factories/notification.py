@@ -7,7 +7,8 @@ from faker import Faker
 
 from habits.tests.factories.habit import HabitFactory
 from notifications.models import Notification
-from notifications.tests.factories.message import MessageFactory
+from notifications.tests.factories.helpers import generate_s3_path
+from notifications.tests.factories.message import NotificationMessageFactory
 
 faker = Faker()
 
@@ -17,7 +18,7 @@ class NotificationFactory(DjangoModelFactory):
         model = Notification
 
     recipient = factory.SubFactory(BaseUserFactory)
-    message = factory.SubFactory(MessageFactory)
+    message = factory.SubFactory(NotificationMessageFactory)
 
 
 class NotificationCreateForUserPayloadFactory(factory.Factory):
@@ -26,6 +27,7 @@ class NotificationCreateForUserPayloadFactory(factory.Factory):
 
     recipient = factory.SubFactory(BaseUserFactory)
     text = factory.LazyAttribute(lambda o: faker.text())
+    image_url = generate_s3_path()
 
 
 class NotificationCreateByHabitsPayloadFactory(factory.Factory):

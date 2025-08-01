@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Message, Notification
+from .models import NotificationMessage, Notification
 
 
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+@admin.register(NotificationMessage)
+class NotificationMessageAdmin(admin.ModelAdmin):
     list_display = ("id", "sender", "short_text", "created_at")
     list_filter = ("created_at",)
     search_fields = ("text", "sender__email", "sender__username")
