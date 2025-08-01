@@ -187,6 +187,23 @@ class ChatMessagesTests(APITestCase):
         response = self.client.put(url, update_payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_cannot_update_other_user_chat_message(self):
+        """Test that user cannot update other user's chat message."""
+        self.client.force_authenticate(user=self.user)
+
+        other_user = MemberFactory()
+
+        # add user to chat
+        ChatMemberFactory(chat=self.chat, user=other_user)
+        message = ChatMessageFactory(
+            sender=other_user, chat=self.chat, content="before update"
+        )
+
+        update_payload = ChatMessageUpdatePayloadFactory()
+        url = reverse(self.detail_url, kwargs={"pk": message.id})
+        response = self.client.put(url, payload=update_payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_delete_chat_message_authentication_required(self):
         """Test that authentication is required to delete chat message."""
         # add user to chat
