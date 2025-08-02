@@ -27,7 +27,7 @@ class NotificationCreateForUserPayloadFactory(factory.Factory):
 
     recipient = factory.SubFactory(BaseUserFactory)
     text = factory.LazyAttribute(lambda o: faker.text())
-    image_url = generate_s3_path()
+    image_path = generate_s3_path()
 
 
 class NotificationCreateByHabitsPayloadFactory(factory.Factory):

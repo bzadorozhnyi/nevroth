@@ -211,7 +211,7 @@ class NotificationTestS(APITestCase):
         self.client.force_authenticate(self.admin)
 
         payload = NotificationCreateForUserPayloadFactory(recipient=self.member.id)
-        payload.pop("image_url")
+        payload.pop("image_path")
 
         response = self.client.post(self.create_notification_for_user, payload)
 
@@ -229,6 +229,7 @@ class NotificationTestS(APITestCase):
 
         self.assertEqual(notification.recipient, self.member)
         self.assertEqual(notification.message.text, payload["text"])
+        self.assertEqual(notification.message.image_url, None)
         self.assertFalse(notification.is_read)
 
         # Verify response schema

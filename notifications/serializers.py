@@ -38,24 +38,25 @@ class CreateNotificationForUserSerializer(serializers.Serializer):
     recipient = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
     )
-    image_url = serializers.CharField(required=False)
+    image_path = serializers.CharField(required=False, write_only=True)
+    image_url = serializers.CharField(required=False, read_only=True)
     text = serializers.CharField(required=True, max_length=300)
 
     @transaction.atomic
     def create(self, validated_data):
         recipient = validated_data.get("recipient")
         text = validated_data.get("text")
-        image_url = validated_data.get("image_url")
+        image_path = validated_data.get("image_path")
         sender = self.context["request"].user
 
         message_data = {
             "sender": sender,
             "text": text,
         }
-        if image_url:
-            message_data["image_url"] = image_url
+        if image_path:
+            message_data["image_path"] = image_path
 
-        message = NotificationMessage.objects.create(sender=sender, text=text)
+        message = NotificationMessage.objects.create(**message_data)
 
         notification = Notification.objects.create(
             recipient=recipient,
@@ -80,21 +81,22 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
         allow_empty=False,
     )
     text = serializers.CharField(required=True, max_length=300)
-    image_url = serializers.CharField(required=False)
+    image_path = serializers.CharField(required=False, write_only=True)
+    image_url = serializers.CharField(required=False, read_only=True)
 
     @transaction.atomic
     def create(self, validated_data):
         habits_ids = validated_data.get("habits_ids")
         text = validated_data.get("text")
-        image_url = validated_data.get("image_url")
+        image_path = validated_data.get("image_path")
         sender = self.context["request"].user
 
         message_data = {
             "sender": sender,
             "text": text,
         }
-        if image_url:
-            message_data["image_url"] = image_url
+        if image_path:
+            message_data["image_path"] = image_path
 
         message = NotificationMessage.objects.create(**message_data)
 
