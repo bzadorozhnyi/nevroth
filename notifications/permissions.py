@@ -15,6 +15,7 @@ class RoleBasedNotificationPermission(BasePermission):
         if request.method == "POST" and getattr(view, "action", None) in [
             "create_notification_for_user",
             "create_notifications_by_habits",
+            "notification_image_upload",
         ]:
             return request.user.role == User.Role.ADMIN
 

@@ -1,6 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import mixins
+from rest_framework import views
 from rest_framework import viewsets
 from rest_framework import status
 
@@ -15,9 +16,13 @@ from notifications.serializers import (
     CreateNotificationsByHabitsSerializer,
     NotificationReadSerializer,
     CreateNotificationsByHabitsResponseSerializer,
+    PreSignedSerializer,
+    ResponsePreSignedImageUploadSerializer,
 )
 
 from drf_spectacular.utils import extend_schema
+
+from notifications.services.s3_service import S3Service
 
 
 class NotificationViewSet(
@@ -103,3 +108,34 @@ class NotificationViewSet(
         result = serializer.save()
 
         return Response(result, status=status.HTTP_201_CREATED)
+
+
+class NotificationImageUploadView(views.APIView):
+    action = "notification_image_upload"
+    permission_classes = [RoleBasedNotificationPermission]
+
+    @extend_schema(
+        request=PreSignedSerializer,
+        responses=ResponsePreSignedImageUploadSerializer,
+        description="Generate presigned URL for uploading images for Notification",
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = PreSignedSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            image_path, pre_signed_url = S3Service.generate_presign_url(
+                image_extension=data["image_extension"],
+                content_type=data.get("content_type", "application/octet-stream"),
+            )
+
+            return Response(
+                {"image_path": image_path, "pre_signed_url": pre_signed_url},
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
