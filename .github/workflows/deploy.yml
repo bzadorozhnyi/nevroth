@@ -1,0 +1,89 @@
+name: Build, Test and Deploy
+
+on:
+  workflow_dispatch
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: nevroth-api
+
+jobs:
+  build-test:
+    name: Build, Test & Manual Deploy
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: nevroth_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+      # Update output format to enable automatic inline annotations.
+      - name: Run Ruff
+        run: ruff check --output-format=github .
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker Image
+        id: build-image
+        run: |
+          docker build -t nevroth-api:${{ github.sha }} .
+
+      - name: Run Migrations and Tests Inside Docker
+        run: |
+          docker run --rm \
+            --network=host \
+            nevroth-api:${{ github.sha }} \
+            sh -c "python manage.py migrate && python manage.py test"
+
+      - name: Tag Docker Image for ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+        run: |
+          docker tag nevroth-api:${{ github.sha }} $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Push Docker Image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
