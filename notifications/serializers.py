@@ -3,12 +3,20 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from habits.models import UserHabit
-from notifications.models import Notification, Message
+from notifications.models import Notification, NotificationMessage
 
 User = get_user_model()
 
 
+class NotificationMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationMessage
+        fields = ["id", "sender", "image_url", "text"]
+
+
 class NotificationSerializer(serializers.ModelSerializer):
+    message = NotificationMessageSerializer()
+
     class Meta:
         model = Notification
         fields = ["id", "recipient", "message", "is_read", "sent_at"]
@@ -30,15 +38,25 @@ class CreateNotificationForUserSerializer(serializers.Serializer):
     recipient = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
     )
+    image_path = serializers.CharField(required=False, write_only=True)
+    image_url = serializers.CharField(required=False, read_only=True)
     text = serializers.CharField(required=True, max_length=300)
 
     @transaction.atomic
     def create(self, validated_data):
         recipient = validated_data.get("recipient")
         text = validated_data.get("text")
+        image_path = validated_data.get("image_path")
         sender = self.context["request"].user
 
-        message = Message.objects.create(sender=sender, text=text)
+        message_data = {
+            "sender": sender,
+            "text": text,
+        }
+        if image_path:
+            message_data["image_path"] = image_path
+
+        message = NotificationMessage.objects.create(**message_data)
 
         notification = Notification.objects.create(
             recipient=recipient,
@@ -63,14 +81,24 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
         allow_empty=False,
     )
     text = serializers.CharField(required=True, max_length=300)
+    image_path = serializers.CharField(required=False, write_only=True)
+    image_url = serializers.CharField(required=False, read_only=True)
 
     @transaction.atomic
     def create(self, validated_data):
         habits_ids = validated_data.get("habits_ids")
         text = validated_data.get("text")
+        image_path = validated_data.get("image_path")
         sender = self.context["request"].user
 
-        message = Message.objects.create(sender=sender, text=text)
+        message_data = {
+            "sender": sender,
+            "text": text,
+        }
+        if image_path:
+            message_data["image_path"] = image_path
+
+        message = NotificationMessage.objects.create(**message_data)
 
         user_habits = UserHabit.objects.filter(habit__id__in=habits_ids).select_related(
             "user"
@@ -106,3 +134,16 @@ class CreateNotificationsByHabitsSerializer(serializers.Serializer):
         serialized_response.is_valid(raise_exception=True)
 
         return serialized_response.data
+
+
+class PreSignedSerializer(serializers.Serializer):
+    ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
+    image_extension = serializers.ChoiceField(choices=ALLOWED_EXTENSIONS)
+    content_type = serializers.CharField(
+        max_length=100, default="application/octet-stream"
+    )
+
+
+class ResponsePreSignedImageUploadSerializer(serializers.Serializer):
+    image_path = serializers.CharField(required=True)
+    pre_signed_url = serializers.CharField(required=True)

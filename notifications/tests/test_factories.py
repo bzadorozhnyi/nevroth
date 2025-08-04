@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 
-from notifications.tests.factories.message import MessageFactory
+from notifications.tests.factories.message import NotificationMessageFactory
 from notifications.tests.factories.notification import (
     NotificationFactory,
     NotificationCreateForUserPayloadFactory,
@@ -10,7 +10,7 @@ from notifications.tests.factories.notification import (
 
 class TestFactories(APITestCase):
     def test_message_factory(self):
-        MessageFactory()
+        NotificationMessageFactory()
 
     def test_notification_factory(self):
         NotificationFactory()

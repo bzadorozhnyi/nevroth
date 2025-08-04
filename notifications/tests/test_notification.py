@@ -19,12 +19,30 @@ from notifications.tests.factories.notification import (
     NotificationCreateByHabitsPayloadFactory,
 )
 
+notification_message_schema = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "integer"},
+        "sender": {"type": "integer"},
+        "image_url": {
+            "type": ["string", "null"],
+            "format": "uri",
+        },
+        "text": {
+            "type": "string",
+            "maxLength": 300,
+        },
+    },
+    "required": ["id", "sender", "text"],
+    "additionalProperties": False,
+}
+
 notification_detail_schema = {
     "type": "object",
     "properties": {
         "id": {"type": "integer"},
         "recipient": {"type": "integer"},
-        "message": {"type": "integer"},
+        "message": notification_message_schema,
         "is_read": {"type": "boolean"},
         "sent_at": {
             "type": "string",
@@ -142,7 +160,10 @@ class NotificationTestS(APITestCase):
                 result = response.data
                 self.assertEqual(result["id"], notification.id)
                 self.assertEqual(result["recipient"], notification.recipient.id)
-                self.assertEqual(result["message"], notification.message.id)
+                self.assertEqual(result["message"]["id"], notification.message.id)
+                self.assertEqual(
+                    result["message"]["image_url"], notification.message.image_url
+                )
                 self.assertFalse(result["is_read"])
 
                 self._assert_detail_response_schema(result)
@@ -180,6 +201,35 @@ class NotificationTestS(APITestCase):
 
         self.assertEqual(notification.recipient, self.member)
         self.assertEqual(notification.message.text, payload["text"])
+        self.assertFalse(notification.is_read)
+
+        # Verify response schema
+        self._assert_detail_response_schema(response.data)
+
+    def test_can_create_notification_for_user_without_image_url(self):
+        """Test that admin can create notification for user without image url."""
+        self.client.force_authenticate(self.admin)
+
+        payload = NotificationCreateForUserPayloadFactory(recipient=self.member.id)
+        payload.pop("image_path")
+
+        response = self.client.post(self.create_notification_for_user, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(
+            Notification.objects.filter(
+                recipient=self.member.id, message__text=payload["text"]
+            ).exists()
+        )
+
+        notification = Notification.objects.get(
+            recipient=self.member.id, message__text=payload["text"]
+        )
+
+        self.assertEqual(notification.recipient, self.member)
+        self.assertEqual(notification.message.text, payload["text"])
+        self.assertEqual(notification.message.image_url, None)
         self.assertFalse(notification.is_read)
 
         # Verify response schema
