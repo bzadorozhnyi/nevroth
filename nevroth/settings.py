@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-dds5+v5zy)te0=c^oaxh)1rs9tkitixfp(z#3w1g_&i6coq02+
 DEBUG = True
 TESTING = "test" in sys.argv
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
