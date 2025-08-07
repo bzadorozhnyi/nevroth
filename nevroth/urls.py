@@ -20,6 +20,8 @@ from django.urls import path
 from django.urls.conf import include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from nevroth.views import simple_health_check
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("accounts.urls")),
@@ -27,6 +29,7 @@ urlpatterns = [
     path("api/", include("habits.urls")),
     path("api/", include("friends.urls")),
     path("api/", include("notifications.urls")),
+    path("alive/", simple_health_check, name="simple_health_check"),
     # Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
