@@ -22,8 +22,18 @@ habit_detail_schema = {
 }
 
 habit_list_schema = {
-    "type": "array",
-    "items": habit_detail_schema,
+    "type": "object",
+    "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "next": {"type": ["string", "null"], "format": "uri"},
+        "previous": {"type": ["string", "null"], "format": "uri"},
+        "results": {
+            "type": "array",
+            "items": habit_detail_schema,
+        },
+    },
+    "required": ["count", "next", "previous", "results"],
+    "additionalProperties": False,
 }
 
 
@@ -58,7 +68,10 @@ class HabitTests(APITestCase):
 
         # Should see all habits
         expected_count = len(self.habits)
-        self.assertEqual(len(result), expected_count)
+        self.assertEqual(result["count"], expected_count)
+        self.assertIsNone(result["next"])
+        self.assertIsNone(result["previous"])
+        self.assertEqual(len(result["results"]), expected_count)
 
         # Verify response schema
         self._assert_list_response_schema(response.data)
@@ -80,11 +93,44 @@ class HabitTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = response.data
 
-        # Should see all habits
-        self.assertEqual(len(result), expected_count)
+        self.assertEqual(result["count"], expected_count)
+        self.assertIsNone(result["next"])
+        self.assertIsNone(result["previous"])
+        self.assertEqual(len(result["results"]), expected_count)
 
         # Verify response schema
         self._assert_list_response_schema(response.data)
+
+    def test_paginated_list_habits_multiple_pages(self):
+        """Test that habits are listed with correct pagination over multiple pages."""
+        self.client.force_authenticate(self.member)
+
+        # clean up habit progress
+        Habit.objects.all().delete()
+
+        HabitFactory.create_batch(15)
+
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.data
+        self.assertEqual(data["count"], 15)
+        self.assertEqual(len(data["results"]), 10)
+        self.assertIsNotNone(data["next"])
+        self.assertIsNone(data["previous"])
+
+        next_url = data["next"]
+        response2 = self.client.get(next_url)
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+        data2 = response2.data
+        self.assertEqual(len(data2["results"]), 5)
+        self.assertIsNone(data2["next"])
+        self.assertIsNotNone(data2["previous"])
+
+        # Verify response schema
+        self._assert_list_response_schema(data)
+        self._assert_list_response_schema(data2)
 
     def test_list_habits_after_create_new_habit(self):
         """Test that habits listed correctly after new habit creation."""
@@ -134,14 +180,18 @@ class HabitTests(APITestCase):
         result = response.data
 
         # Should see all habits
-        self.assertEqual(len(result), len(self.habits))
+        expected_count = len(self.habits)
+        self.assertEqual(result["count"], expected_count)
+        self.assertIsNone(result["next"])
+        self.assertIsNone(result["previous"])
+        self.assertEqual(len(result["results"]), expected_count)
 
         # Verify response schema
         self._assert_list_response_schema(response.data)
 
         # Verify that returned updated habit
         habit_id = self.habits[0].pk
-        habit = next((h for h in result if h["id"] == habit_id), None)
+        habit = next((h for h in result["results"] if h["id"] == habit_id), None)
 
         self.assertIsNotNone(habit, f"Habit with id={habit_id} not found in response.")
 

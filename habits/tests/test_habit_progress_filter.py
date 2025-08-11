@@ -70,12 +70,21 @@ class HabitProgressFilterTests(APITestCase):
             filter_param = "&".join(f"{k}={v}" for k, v in param_value.items())
             with self.subTest(f"filter by {filter_param}"):
                 response = self.client.get(f"{self.url}?{filter_param}")
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                url = f"{self.url}?{filter_param}"
+                total_results = []
+                next_url = url
 
-                results = response.get("results", response.data)
-                self.assertEqual(len(results), expected_count)
+                while next_url:
+                    response = self.client.get(next_url)
+                    self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-                counts = Counter(item["status"] for item in results)
+                    data = response.data
 
+                    total_results.extend(data["results"])
+                    next_url = data["next"]
+
+                self.assertEqual(len(total_results), expected_count)
+
+                counts = Counter(item["status"] for item in total_results)
                 self.assertEqual(expected_success_count, counts["success"])
                 self.assertEqual(expected_fail_count, counts["fail"])
