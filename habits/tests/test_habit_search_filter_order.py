@@ -31,24 +31,37 @@ class HabitSearchFilterTests(APITestCase):
 
         for search_term, expected_count, expected_values in search_test_cases:
             with self.subTest(f"searching for '{search_term}'"):
-                response = self.client.get(f"{self.list_url}?search={search_term}")
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                total_results = []
+                next_url = f"{self.list_url}?search={search_term}"
 
-                results = response.get("results", response.data)
-                self.assertEqual(len(results), expected_count)
+                while next_url:
+                    response = self.client.get(next_url)
+                    self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+                    data = response.data
+
+                    total_results.extend(data["results"])
+                    next_url = data["next"]
+
+                self.assertEqual(len(total_results), expected_count)
 
                 if search_term == "Bad":
                     self.assertTrue(
-                        any(habit["name"] == expected_values[0] for habit in results)
+                        any(
+                            habit["name"] == expected_values[0]
+                            for habit in total_results
+                        )
                     )
                     self.assertTrue(
                         any(
                             habit["description"] == expected_values[1]
-                            for habit in results
+                            for habit in total_results
                         )
                     )
                 elif search_term == "Different":
-                    self.assertEqual(results[0]["description"], expected_values[0])
+                    self.assertEqual(
+                        total_results[0]["description"], expected_values[0]
+                    )
 
     def test_list_habits_with_filter(self):
         self.client.force_authenticate(user=self.member)
@@ -65,16 +78,24 @@ class HabitSearchFilterTests(APITestCase):
 
         for param, value, expected_count in filter_test_cases:
             with self.subTest(f"filtering for {param}={value}"):
-                response = self.client.get(f"{self.list_url}?{param}={value}")
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                total_results = []
+                next_url = f"{self.list_url}?{param}={value}"
 
-                results = response.get("results", response.data)
-                self.assertEqual(len(results), expected_count)
+                while next_url:
+                    response = self.client.get(next_url)
+                    self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+                    data = response.data
+
+                    total_results.extend(data["results"])
+                    next_url = data["next"]
+
+                self.assertEqual(len(total_results), expected_count)
 
                 if param == "name" and value == "Apple":
-                    self.assertEqual(results[0]["name"], "Apple addiction")
+                    self.assertEqual(total_results[0]["name"], "Apple addiction")
                 elif param == "name" and value == "specific":
-                    self.assertEqual(results[0]["name"], "Specific habit")
+                    self.assertEqual(total_results[0]["name"], "Specific habit")
 
     def test_list_habits_with_ordering(self):
         self.client.force_authenticate(user=self.member)
@@ -90,12 +111,19 @@ class HabitSearchFilterTests(APITestCase):
 
         for ordering_param, expected_order in ordering_test_cases:
             with self.subTest(f"ordering by {ordering_param}"):
-                response = self.client.get(f"{self.list_url}?ordering={ordering_param}")
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                total_results = []
+                next_url = f"{self.list_url}?ordering={ordering_param}"
 
-                results = response.get("results", response.data)
+                while next_url:
+                    response = self.client.get(next_url)
+                    self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+                    data = response.data
+
+                    total_results.extend(data["results"])
+                    next_url = data["next"]
 
                 if ordering_param in ["name", "-name"]:
-                    actual_values = [habit["name"] for habit in results]
+                    actual_values = [habit["name"] for habit in total_results]
 
                 self.assertEqual(actual_values, expected_order)

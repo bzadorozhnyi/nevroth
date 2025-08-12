@@ -26,7 +26,7 @@ from habits.serializers import (
 
 @method_decorator(cache_page(60 * 5, key_prefix="habits-list"), name="list")
 class HabitViewSet(viewsets.ModelViewSet):
-    queryset = Habit.objects.all()
+    queryset = Habit.objects.all().order_by("id")
     serializer_class = HabitSerializer
     permission_classes = [RoleBasedHabitPermission]
     filterset_class = HabitFilter
@@ -37,7 +37,6 @@ class HabitViewSet(viewsets.ModelViewSet):
     ]
     ordering_fields = ["name"]
     search_fields = ["name", "description"]
-    pagination_class = None
 
     @extend_schema(
         request=UserHabitsUpdateSerializer,
@@ -58,13 +57,12 @@ class HabitProgressViewSet(generics.ListCreateAPIView):
     serializer_class = HabitProgressSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = HabitProgressFilter
-    pagination_class = None
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return HabitProgress.objects.none()
 
-        return HabitProgress.objects.filter(user=self.request.user)
+        return HabitProgress.objects.filter(user=self.request.user).order_by("-date")
 
 
 class HabitStreaksView(APIView):
